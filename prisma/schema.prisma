@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  name               String
+  username           String   @unique
+  passwordHash       String
+  role               String   @default("STAFF") // "ADMIN" | "STAFF"
+  mustChangePassword Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model CompanySettings {
+  id                   String   @id @default("default")
+  companyName          String   @default("Shashikala Power Tech")
+  displayName          String   @default("SHASHIKALAA POWER TECK")
+  tagline              String   @default("SOLAR & ENERGY SOLUTIONS")
+  gstNumber            String   @default("27AJRPN3091N1ZE")
+  phone                String   @default("+91 95271 61595")
+  email                String   @default("shashikalapowertech@gmail.com")
+  address              String   @default("Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034")
+  logoPath             String   @default("/logo.png")
+  quotationPrefix      String   @default("QT-")
+  invoicePrefix        String   @default("INV-")
+  nextQuotationNumber  Int      @default(1)
+  nextInvoiceNumber    Int      @default(1)
+  defaultValidityDays  Int      @default(15)
+  defaultGst           Float    @default(18.0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Quotation {
+  id                  String          @id @default(cuid())
+  quotationNumber     String          @unique
+  date                String
+  customerName        String
+  proposedSystem      String
+  connectionType      String
+  systemCapacity      String
+  estimatedGeneration String
+  validityDays        Int             @default(15)
+  totalAmount         Float
+  gstInclusive        Boolean         @default(true)
+  investmentNote      String          @default("Includes all materials, transport, installation & net-metering support.")
+  companySnapshot     String          // JSON encoded string
+  createdBy           String
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  items               QuotationItem[]
+  invoices            Invoice[]
+}
+
+model QuotationItem {
+  id            String    @id @default(cuid())
+  quotationId   String
+  quotation     Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  sortOrder     Int       @default(0)
+  component     String
+  specification String
+  brandModel    String
+  quantity      String
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  invoiceNumber   String        @unique
+  quotationId     String?
+  quotation       Quotation?    @relation(fields: [quotationId], references: [id], onDelete: SetNull)
+  invoiceDate     String
+  dueDate         String
+  customerName    String
+  customerAddress String?
+  customerMobile  String?
+  customerGst     String?
+  subtotal        Float
+  gstAmount       Float
+  discount        Float         @default(0)
+  totalAmount     Float
+  amountPaid      Float         @default(0)
+  paymentStatus   String        @default("UNPAID") // "UNPAID" | "PARTIALLY PAID" | "PAID"
+  paymentMethod   String?       // "UPI" | "Bank Transfer" | "Cash" | "Cheque" | "Other"
+  notes           String?
+  companySnapshot String        // JSON encoded string
+  createdBy       String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  items           InvoiceItem[]
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  sortOrder   Int      @default(0)
+  description String
+  quantity    Float    @default(1)
+  rate        Float
+  gstRate     Float    @default(18.0)
+  amount      Float
+}
