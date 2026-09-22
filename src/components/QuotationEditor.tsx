@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import QuotationPreview, { QuotationData, QuotationItemData } from "./QuotationPreview";
 import { CompanySnapshot } from "@/lib/company";
@@ -17,6 +17,8 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
+  FileText,
+  Eye,
 } from "lucide-react";
 
 interface QuotationEditorProps {
@@ -93,6 +95,14 @@ export default function QuotationEditor({
     initialData?.id || null
   );
   const [previewScale, setPreviewScale] = useState<number>(0.72);
+  const [activeMobileTab, setActiveMobileTab] = useState<"form" | "preview">("form");
+
+  // Adjust default scale on small mobile screens to fit neatly
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setPreviewScale(0.42);
+    }
+  }, []);
 
   // Quick component adder
   const handleAddPreset = (presetIndex: number) => {
@@ -269,10 +279,42 @@ export default function QuotationEditor({
         </div>
       )}
 
+      {/* Mobile View Switcher (Visible only on < lg) */}
+      <div className="no-print lg:hidden mb-4 flex rounded-lg bg-slate-200/80 p-1">
+        <button
+          type="button"
+          onClick={() => setActiveMobileTab("form")}
+          className={`flex-1 py-2 text-xs font-bold rounded-md flex items-center justify-center space-x-1.5 transition ${
+            activeMobileTab === "form"
+              ? "bg-[#0F4C81] text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>Edit Quotation Form</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveMobileTab("preview")}
+          className={`flex-1 py-2 text-xs font-bold rounded-md flex items-center justify-center space-x-1.5 transition ${
+            activeMobileTab === "preview"
+              ? "bg-[#0F4C81] text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>Live A4 Preview</span>
+        </button>
+      </div>
+
       {/* Main Two-Panel Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* LEFT PANEL: Form / Input (~42% on desktop) */}
-        <div className="no-print lg:col-span-5 bg-white border border-slate-200 rounded-lg shadow-sm p-5 space-y-6">
+        <div
+          className={`no-print lg:col-span-5 bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-5 space-y-6 ${
+            activeMobileTab === "form" ? "block" : "hidden lg:block"
+          }`}
+        >
           <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-black text-[#0F4C81]">
@@ -441,7 +483,7 @@ export default function QuotationEditor({
 
           {/* Section C: Bill of Materials */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Bill of Materials ({items.length})
               </h3>
@@ -658,38 +700,51 @@ export default function QuotationEditor({
         </div>
 
         {/* RIGHT PANEL: Live A4 Preview (~58% on desktop) */}
-        <div className="lg:col-span-7 flex flex-col items-center">
+        <div
+          className={`lg:col-span-7 flex-col items-center w-full max-w-full overflow-hidden ${
+            activeMobileTab === "preview" ? "flex" : "hidden lg:flex"
+          }`}
+        >
           {/* Controls Bar */}
-          <div className="no-print w-full flex items-center justify-between mb-3 bg-white p-2 px-4 rounded-lg border border-slate-200 shadow-sm text-xs text-slate-600">
+          <div className="no-print w-full flex items-center justify-between mb-3 bg-white p-2 px-3 sm:px-4 rounded-lg border border-slate-200 shadow-sm text-xs text-slate-600">
             <div className="flex items-center space-x-2">
               <span className="font-bold text-[#0F4C81]">Live A4 Preview</span>
-              <span className="text-slate-400">|</span>
-              <span className="text-[11px] text-slate-500">
+              <span className="text-slate-400 hidden sm:inline">|</span>
+              <span className="text-[11px] text-slate-500 hidden sm:inline">
                 Updates instantly as you type
               </span>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1.5 sm:space-x-2">
               <button
-                onClick={() => setPreviewScale((s) => Math.max(0.5, s - 0.05))}
-                className="p-1 hover:bg-slate-100 rounded text-slate-600"
+                type="button"
+                onClick={() => setPreviewScale((s) => Math.max(0.3, parseFloat((s - 0.05).toFixed(2))))}
+                className="p-1.5 hover:bg-slate-100 rounded text-slate-600"
                 title="Zoom Out"
               >
                 <ZoomOut className="w-4 h-4" />
               </button>
-              <span className="font-mono text-[11px] text-slate-700">
+              <span className="font-mono text-[11px] text-slate-700 w-9 text-center">
                 {Math.round(previewScale * 100)}%
               </span>
               <button
-                onClick={() => setPreviewScale((s) => Math.min(1.0, s + 0.05))}
-                className="p-1 hover:bg-slate-100 rounded text-slate-600"
+                type="button"
+                onClick={() => setPreviewScale((s) => Math.min(1.0, parseFloat((s + 0.05).toFixed(2))))}
+                className="p-1.5 hover:bg-slate-100 rounded text-slate-600"
                 title="Zoom In"
               >
                 <ZoomIn className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setPreviewScale(0.72)}
-                className="p-1 hover:bg-slate-100 rounded text-slate-600 ml-1"
+                type="button"
+                onClick={() =>
+                  setPreviewScale(
+                    typeof window !== "undefined" && window.innerWidth < 640
+                      ? 0.42
+                      : 0.72
+                  )
+                }
+                className="p-1.5 hover:bg-slate-100 rounded text-slate-600 ml-1"
                 title="Reset Fit"
               >
                 <Maximize2 className="w-3.5 h-3.5" />
@@ -697,13 +752,31 @@ export default function QuotationEditor({
             </div>
           </div>
 
-          {/* Document Container */}
-          <div className="w-full overflow-x-auto flex justify-center py-2">
-            <QuotationPreview
-              data={previewData}
-              company={company}
-              scale={previewScale}
-            />
+          {/* Document Container with layout-bounded scaling */}
+          <div className="w-full max-w-full overflow-x-auto py-2 flex justify-center bg-slate-200/50 rounded-lg p-2 sm:p-4 border border-slate-200">
+            <div
+              style={{
+                width: `${210 * previewScale}mm`,
+                height: `${297 * previewScale}mm`,
+                flexShrink: 0,
+                transition: "width 0.15s ease-out, height 0.15s ease-out",
+              }}
+            >
+              <div
+                style={{
+                  transform: `scale(${previewScale})`,
+                  transformOrigin: "top left",
+                  width: "210mm",
+                  height: "297mm",
+                }}
+              >
+                <QuotationPreview
+                  data={previewData}
+                  company={company}
+                  scale={1}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -112,12 +112,12 @@ export default function QuotationsHistoryPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-black text-[#0F4C81] flex items-center space-x-2">
-            <FileText className="w-6 h-6 text-[#F37021]" />
+          <h1 className="text-xl sm:text-2xl font-black text-[#0F4C81] flex items-center space-x-2">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#F37021]" />
             <span>QUOTATIONS HISTORY</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -127,7 +127,7 @@ export default function QuotationsHistoryPage() {
 
         <Link
           href="/quotations/new"
-          className="inline-flex items-center space-x-2 bg-[#F37021] hover:bg-[#D95D14] text-white text-xs font-bold px-4 py-2.5 rounded-md shadow-sm transition"
+          className="inline-flex items-center justify-center space-x-2 bg-[#F37021] hover:bg-[#D95D14] text-white text-xs font-bold px-4 py-2.5 rounded-md shadow-sm transition w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           <span>+ Create New Quotation</span>
@@ -161,7 +161,7 @@ export default function QuotationsHistoryPage() {
       {/* Quotations Table */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-xs">
+          <table className="w-full min-w-[700px] border-collapse text-left text-xs">
             <thead>
               <tr className="bg-[#0F4C81] text-white text-[11px] font-bold uppercase tracking-wider">
                 <th className="py-3 px-4">QUOTATION NO</th>

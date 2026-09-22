@@ -17,6 +17,8 @@ import {
   ZoomOut,
   Maximize2,
   Calculator,
+  FileText,
+  Eye,
 } from "lucide-react";
 
 interface InvoiceEditorProps {
@@ -100,6 +102,14 @@ export default function InvoiceEditor({
     initialData?.id || null
   );
   const [previewScale, setPreviewScale] = useState<number>(0.72);
+  const [activeMobileTab, setActiveMobileTab] = useState<"form" | "preview">("form");
+
+  // Adjust default scale on small mobile screens to fit neatly
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setPreviewScale(0.42);
+    }
+  }, []);
 
   // Recalculate totals whenever items or discount change
   useEffect(() => {
@@ -301,10 +311,42 @@ export default function InvoiceEditor({
         </div>
       )}
 
+      {/* Mobile View Switcher (Visible only on < lg) */}
+      <div className="no-print lg:hidden mb-4 flex rounded-lg bg-slate-200/80 p-1">
+        <button
+          type="button"
+          onClick={() => setActiveMobileTab("form")}
+          className={`flex-1 py-2 text-xs font-bold rounded-md flex items-center justify-center space-x-1.5 transition ${
+            activeMobileTab === "form"
+              ? "bg-[#0F4C81] text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>Edit Invoice Form</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveMobileTab("preview")}
+          className={`flex-1 py-2 text-xs font-bold rounded-md flex items-center justify-center space-x-1.5 transition ${
+            activeMobileTab === "preview"
+              ? "bg-[#0F4C81] text-white shadow-sm"
+              : "text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <Eye className="w-3.5 h-3.5" />
+          <span>Live A4 Preview</span>
+        </button>
+      </div>
+
       {/* Main Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* LEFT PANEL: Form */}
-        <div className="no-print lg:col-span-5 bg-white border border-slate-200 rounded-lg shadow-sm p-5 space-y-6">
+        <div
+          className={`no-print lg:col-span-5 bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-5 space-y-6 ${
+            activeMobileTab === "form" ? "block" : "hidden lg:block"
+          }`}
+        >
           <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-black text-[#0F4C81]">
@@ -463,7 +505,7 @@ export default function InvoiceEditor({
                       />
                     </div>
 
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                       <div>
                         <label className="block text-[10px] text-slate-500 font-semibold mb-0.5">
                           Qty
@@ -664,35 +706,48 @@ export default function InvoiceEditor({
         </div>
 
         {/* RIGHT PANEL: Live A4 Invoice Preview */}
-        <div className="lg:col-span-7 flex flex-col items-center">
-          <div className="no-print w-full flex items-center justify-between mb-3 bg-white p-2 px-4 rounded-lg border border-slate-200 shadow-sm text-xs text-slate-600">
+        <div
+          className={`lg:col-span-7 flex-col items-center w-full max-w-full overflow-hidden ${
+            activeMobileTab === "preview" ? "flex" : "hidden lg:flex"
+          }`}
+        >
+          <div className="no-print w-full flex items-center justify-between mb-3 bg-white p-2 px-3 sm:px-4 rounded-lg border border-slate-200 shadow-sm text-xs text-slate-600">
             <div className="flex items-center space-x-2">
               <span className="font-bold text-[#0F4C81]">Live A4 Invoice Preview</span>
-              <span className="text-slate-400">|</span>
-              <span className="text-[11px] text-slate-500">Updates in real time</span>
+              <span className="text-slate-400 hidden sm:inline">|</span>
+              <span className="text-[11px] text-slate-500 hidden sm:inline">Updates in real time</span>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1.5 sm:space-x-2">
               <button
-                onClick={() => setPreviewScale((s) => Math.max(0.5, s - 0.05))}
-                className="p-1 hover:bg-slate-100 rounded text-slate-600"
+                type="button"
+                onClick={() => setPreviewScale((s) => Math.max(0.3, parseFloat((s - 0.05).toFixed(2))))}
+                className="p-1.5 hover:bg-slate-100 rounded text-slate-600"
                 title="Zoom Out"
               >
                 <ZoomOut className="w-4 h-4" />
               </button>
-              <span className="font-mono text-[11px] text-slate-700">
+              <span className="font-mono text-[11px] text-slate-700 w-9 text-center">
                 {Math.round(previewScale * 100)}%
               </span>
               <button
-                onClick={() => setPreviewScale((s) => Math.min(1.0, s + 0.05))}
-                className="p-1 hover:bg-slate-100 rounded text-slate-600"
+                type="button"
+                onClick={() => setPreviewScale((s) => Math.min(1.0, parseFloat((s + 0.05).toFixed(2))))}
+                className="p-1.5 hover:bg-slate-100 rounded text-slate-600"
                 title="Zoom In"
               >
                 <ZoomIn className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setPreviewScale(0.72)}
-                className="p-1 hover:bg-slate-100 rounded text-slate-600 ml-1"
+                type="button"
+                onClick={() =>
+                  setPreviewScale(
+                    typeof window !== "undefined" && window.innerWidth < 640
+                      ? 0.42
+                      : 0.72
+                  )
+                }
+                className="p-1.5 hover:bg-slate-100 rounded text-slate-600 ml-1"
                 title="Reset Fit"
               >
                 <Maximize2 className="w-3.5 h-3.5" />
@@ -700,12 +755,31 @@ export default function InvoiceEditor({
             </div>
           </div>
 
-          <div className="w-full overflow-x-auto flex justify-center py-2">
-            <InvoicePreview
-              data={previewData}
-              company={company}
-              scale={previewScale}
-            />
+          {/* Document Container with layout-bounded scaling */}
+          <div className="w-full max-w-full overflow-x-auto py-2 flex justify-center bg-slate-200/50 rounded-lg p-2 sm:p-4 border border-slate-200">
+            <div
+              style={{
+                width: `${210 * previewScale}mm`,
+                height: `${297 * previewScale}mm`,
+                flexShrink: 0,
+                transition: "width 0.15s ease-out, height 0.15s ease-out",
+              }}
+            >
+              <div
+                style={{
+                  transform: `scale(${previewScale})`,
+                  transformOrigin: "top left",
+                  width: "210mm",
+                  height: "297mm",
+                }}
+              >
+                <InvoicePreview
+                  data={previewData}
+                  company={company}
+                  scale={1}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

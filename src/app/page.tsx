@@ -33,9 +33,9 @@ export default async function HomePage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-10">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-[#0F4C81] to-[#164E87] rounded-xl p-8 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-[#0F4C81] to-[#164E87] rounded-xl p-5 sm:p-8 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 text-center md:text-left">
           <div className="inline-block bg-[#F37021] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded tracking-wider">
             Quick Action Desk

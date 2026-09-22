@@ -160,11 +160,11 @@ export default function SettingsPage() {
   const isAdmin = currentUser?.role === "ADMIN";
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-[#0F4C81] flex items-center space-x-2">
-          <SettingsIcon className="w-6 h-6 text-[#F37021]" />
+        <h1 className="text-xl sm:text-2xl font-black text-[#0F4C81] flex items-center space-x-2">
+          <SettingsIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#F37021]" />
           <span>APPLICATION & COMPANY SETTINGS</span>
         </h1>
         <p className="text-xs text-slate-500 mt-1">
@@ -200,9 +200,9 @@ export default function SettingsPage() {
       )}
 
       {/* Settings Form */}
-      <form onSubmit={handleSaveSettings} className="space-y-8">
+      <form onSubmit={handleSaveSettings} className="space-y-6 sm:space-y-8">
         {/* 1. Company Profile */}
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-6 space-y-4">
           <div className="flex items-center space-x-2 pb-3 border-b border-slate-100">
             <Building className="w-5 h-5 text-[#0F4C81]" />
             <h2 className="text-sm font-black text-[#0F4C81] uppercase tracking-wide">
@@ -323,7 +323,7 @@ export default function SettingsPage() {
         </div>
 
         {/* 2. Document Numbering & Defaults */}
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-6 space-y-4">
           <div className="flex items-center space-x-2 pb-3 border-b border-slate-100">
             <FileSpreadsheet className="w-5 h-5 text-[#0F4C81]" />
             <h2 className="text-sm font-black text-[#0F4C81] uppercase tracking-wide">
@@ -440,7 +440,7 @@ export default function SettingsPage() {
 
       {/* 3. User Management (Admin Only) */}
       {isAdmin && (
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-6 space-y-4">
+        <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="flex items-center space-x-2">
               <Users className="w-5 h-5 text-[#0F4C81]" />
@@ -537,7 +537,7 @@ export default function SettingsPage() {
 
           {/* User Table */}
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-xs">
+            <table className="w-full min-w-[580px] border-collapse text-left text-xs">
               <thead>
                 <tr className="bg-slate-100 text-slate-600 text-[11px] font-bold uppercase">
                   <th className="py-2.5 px-3">Name</th>
