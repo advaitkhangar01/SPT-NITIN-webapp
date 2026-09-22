@@ -68,7 +68,7 @@ export default function QuotationPreview({
 
   return (
     <div
-      className="a4-document-container bg-white text-slate-800 shadow-2xl relative flex flex-col justify-between"
+      className="a4-document-container bg-white text-slate-800 shadow-2xl relative flex flex-col justify-between overflow-hidden"
       style={{
         width: "210mm",
         minHeight: "297mm",
@@ -80,17 +80,46 @@ export default function QuotationPreview({
         transformOrigin: "top center",
       }}
     >
-      {/* Top Header Section */}
-      <div>
-        {/* Decorative Top Accent Bar */}
-        <div className="flex h-1.5 w-full rounded-full overflow-hidden mb-3">
-          <div className="w-1/3 bg-[#0F4C81]"></div>
-          <div className="w-1/2 bg-[#F37021]"></div>
-          <div className="w-1/6 bg-[#86EFAC]"></div>
-        </div>
+      {/* Top-Right Completely Filled Background Graphic (Solid Geometry, NO Floating Lines) */}
+      <svg
+        className="absolute top-0 right-0 w-[430px] h-[105px] pointer-events-none z-0"
+        viewBox="0 0 430 105"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="gstNavyFill" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0F4C81" />
+            <stop offset="100%" stopColor="#072b4c" />
+          </linearGradient>
+          <linearGradient id="gstOrangeFill" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#F37021" />
+            <stop offset="100%" stopColor="#DE5509" />
+          </linearGradient>
+        </defs>
 
-        {/* Main Header with Logo, Title and Graphic Swoop GST Badge */}
-        <div className="flex items-center justify-between relative pb-1">
+        {/* Navy Blue Base Curve (Completely Filled) */}
+        <path
+          d="M 90 0 C 110 50 150 95 240 105 L 430 105 L 430 0 Z"
+          fill="url(#gstNavyFill)"
+        />
+
+        {/* Gold Solar Accent Ribbon (Completely Filled) */}
+        <path
+          d="M 115 0 C 132 45 168 85 245 92 L 430 92 L 430 0 Z"
+          fill="#FBBF24"
+        />
+
+        {/* Vibrant Solar Orange Main Body (Completely Filled) */}
+        <path
+          d="M 125 0 C 140 42 175 80 250 85 L 430 85 L 430 0 Z"
+          fill="url(#gstOrangeFill)"
+        />
+      </svg>
+
+      {/* Top Header Section */}
+      <div className="relative z-10">
+        {/* Main Header with Logo, Title and Filled Graphic GST Section */}
+        <div className="flex items-center justify-between relative pb-1 pt-1">
           {/* Logo & Company Name */}
           <div className="flex items-center space-x-3.5">
             <div className="w-[72px] h-[72px] relative flex items-center justify-center flex-shrink-0">
@@ -117,25 +146,10 @@ export default function QuotationPreview({
             </div>
           </div>
 
-          {/* Curved Orange GST Badge with Blue Sweep Line */}
-          <div className="relative flex items-center pr-1">
-            {/* Dark Blue Sweep Line SVG */}
-            <svg
-              className="absolute -bottom-2 -left-9 w-64 h-8 pointer-events-none z-0"
-              viewBox="0 0 240 32"
-              fill="none"
-            >
-              <path
-                d="M 5 28 C 45 28, 65 6, 110 5 L 240 5"
-                stroke="#0F4C81"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-            </svg>
-
-            {/* Orange Badge Container */}
-            <div className="bg-gradient-to-r from-[#F37021] to-[#E25C0E] text-white px-5 py-2 rounded-l-full shadow-sm flex items-center relative z-10 font-bold text-xs tracking-wider whitespace-nowrap">
-              <span>GST No.: {gst}</span>
+          {/* GST Display seamlessly integrated over the filled orange graphic */}
+          <div className="relative z-10 pr-4 pt-1 flex items-center">
+            <div className="text-white font-black text-xs tracking-wider whitespace-nowrap drop-shadow-xs">
+              GST No.: {gst}
             </div>
           </div>
         </div>
