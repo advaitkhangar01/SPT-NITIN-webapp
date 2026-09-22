@@ -48,11 +48,11 @@ function LoginForm() {
     <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       {/* Brand Banner */}
       <div className="bg-[#0F4C81] p-6 text-center text-white relative">
-        <div className="w-20 h-20 mx-auto mb-3 bg-white rounded-full p-1.5 shadow-md flex items-center justify-center">
+        <div className="w-20 h-20 mx-auto mb-3 bg-white rounded-2xl p-2 shadow-md flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
-            alt="Shashikala Power Tech"
+            alt="Shashikala Power Teck"
             className="max-h-full max-w-full object-contain"
           />
         </div>

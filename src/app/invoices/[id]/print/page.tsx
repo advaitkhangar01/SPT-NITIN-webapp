@@ -47,6 +47,7 @@ export default async function InvoicePrintPage({
             rate: it.rate,
             gstRate: it.gstRate,
             amount: it.amount,
+            per: "Set",
           })),
           subtotal: invoice.subtotal,
           gstAmount: invoice.gstAmount,
@@ -56,6 +57,7 @@ export default async function InvoicePrintPage({
           paymentStatus: invoice.paymentStatus,
           paymentMethod: invoice.paymentMethod || undefined,
           notes: invoice.notes || undefined,
+          refNo: invoice.quotationId ? `QT-${invoice.quotationId.slice(-4)}` : undefined,
         }}
         company={company}
         scale={1}

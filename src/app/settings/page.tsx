@@ -304,7 +304,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="pt-2 flex items-center space-x-4">
-            <div className="w-16 h-16 bg-slate-100 border border-slate-300 rounded p-1 flex items-center justify-center">
+            <div className="w-20 h-20 bg-white border border-slate-200 rounded-xl p-1.5 flex items-center justify-center shadow-xs">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={settings.logoPath || "/logo.png"}

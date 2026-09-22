@@ -82,8 +82,8 @@ export default function Navbar() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"
-              alt="Logo"
-              className="h-7 w-7 sm:h-8 sm:w-8 object-contain rounded-full bg-white p-0.5 flex-shrink-0"
+              alt="Shashikala Power Teck Logo"
+              className="h-8 w-8 sm:h-9 sm:w-9 object-contain rounded-lg bg-white p-0.5 shadow-xs flex-shrink-0"
             />
             <div className="flex flex-col min-w-0">
               <span className="text-xs sm:text-sm font-black tracking-wider leading-tight truncate">

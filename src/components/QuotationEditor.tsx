@@ -86,6 +86,9 @@ export default function QuotationEditor({
     initialData?.investmentNote ||
       "Includes all materials, transport, installation & net-metering support."
   );
+  const [showDocumentsRequired, setShowDocumentsRequired] = useState<boolean>(
+    initialData?.showDocumentsRequired ?? true
+  );
 
   // UI state
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -252,6 +255,7 @@ export default function QuotationEditor({
     totalAmount,
     gstInclusive,
     investmentNote,
+    showDocumentsRequired,
   };
 
   return (
@@ -662,6 +666,28 @@ export default function QuotationEditor({
                 onChange={(e) => setInvestmentNote(e.target.value)}
                 className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none"
               />
+            </div>
+
+            {/* Documents Checklist Toggle */}
+            <div className="pt-2 border-t border-slate-100 flex items-start space-x-2.5 bg-blue-50/60 p-2.5 rounded-md border border-blue-100">
+              <input
+                type="checkbox"
+                id="showDocumentsRequired"
+                checked={showDocumentsRequired}
+                onChange={(e) => setShowDocumentsRequired(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#0F4C81] focus:ring-[#0F4C81] cursor-pointer"
+              />
+              <label
+                htmlFor="showDocumentsRequired"
+                className="text-xs text-slate-700 font-medium cursor-pointer"
+              >
+                <span className="font-bold text-[#0F4C81] block">
+                  Show Solar Application Documents Checklist
+                </span>
+                <span className="text-[11px] text-slate-500 block leading-tight mt-0.5">
+                  Includes the 6 required documents (Electricity bill, Aadhar, Photo, Cheque, A-1 Form) and load extension notice.
+                </span>
+              </label>
             </div>
           </div>
 
