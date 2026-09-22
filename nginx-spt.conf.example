@@ -1,0 +1,24 @@
+# Example Nginx Reverse Proxy Configuration for SPT Web App
+# Place this in /etc/nginx/sites-available/spt-webapp
+# Enable it: sudo ln -s /etc/nginx/sites-available/spt-webapp /etc/nginx/sites-enabled/
+# Test config: sudo nginx -t
+# Reload: sudo systemctl reload nginx
+
+server {
+    listen 80;
+    server_name your-subdomain.yourdomain.com; # Replace with your domain or VPS IP if no domain
+
+    # Next.js Reverse Proxy
+    location / {
+        proxy_pass http://127.0.0.1:3005; # Match the PORT defined in .env / ecosystem.config.cjs
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 90s;
+    }
+}

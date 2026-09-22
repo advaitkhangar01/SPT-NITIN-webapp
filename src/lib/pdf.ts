@@ -1,10 +1,11 @@
 import puppeteer from "puppeteer";
 
-export async function generatePdfFromUrl(url: string): Promise<Buffer> {
+export async function generatePdfFromUrl(url: string, sessionCookie?: string): Promise<Buffer> {
   let browser = null;
   try {
     browser = await puppeteer.launch({
       headless: true,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -14,6 +15,17 @@ export async function generatePdfFromUrl(url: string): Promise<Buffer> {
     });
 
     const page = await browser.newPage();
+
+    if (sessionCookie) {
+      const urlObj = new URL(url);
+      await page.setCookie({
+        name: "spt_session",
+        value: sessionCookie,
+        domain: urlObj.hostname,
+        path: "/",
+      });
+    }
+
     // Emulate screen/print media
     await page.emulateMediaType("print");
     await page.goto(url, {

@@ -2,3 +2,6 @@ node_modules
 .next
 dev.db*
 *.log
+.env
+.env*.local
+

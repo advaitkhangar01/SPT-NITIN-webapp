@@ -21,12 +21,12 @@ export async function GET(
       return NextResponse.json({ error: "Quotation not found" }, { status: 404 });
     }
 
-    const host = req.headers.get("host") || "localhost:3000";
-    const protocol = req.headers.get("x-forwarded-proto") || "http";
-    const printUrl = `${protocol}://${host}/quotations/${params.id}/print`;
+    const sessionToken = req.cookies.get("spt_session")?.value;
+    const internalPort = process.env.PORT || "3000";
+    const printUrl = `http://127.0.0.1:${internalPort}/quotations/${params.id}/print`;
 
     try {
-      const pdfBuffer = await generatePdfFromUrl(printUrl);
+      const pdfBuffer = await generatePdfFromUrl(printUrl, sessionToken);
 
       return new NextResponse(new Uint8Array(pdfBuffer), {
         status: 200,
