@@ -80,10 +80,10 @@ export default function QuotationPreview({
         transformOrigin: "top center",
       }}
     >
-      {/* Top-Right Completely Filled Background Graphic (Solid Geometry, NO Floating Lines) */}
+      {/* Top-Right Completely Filled Background Graphic with Perfectly Centered GST */}
       <svg
-        className="absolute top-0 right-0 w-[430px] h-[105px] pointer-events-none z-0"
-        viewBox="0 0 430 105"
+        className="absolute top-0 right-0 w-[440px] h-[75px] pointer-events-none z-0"
+        viewBox="0 0 440 75"
         fill="none"
       >
         <defs>
@@ -99,27 +99,41 @@ export default function QuotationPreview({
 
         {/* Navy Blue Base Curve (Completely Filled) */}
         <path
-          d="M 90 0 C 110 50 150 95 240 105 L 430 105 L 430 0 Z"
+          d="M 60 72 C 140 75 220 72 320 62 L 440 55 L 440 0 L 160 0 C 130 25 90 50 60 72 Z"
           fill="url(#gstNavyFill)"
         />
 
         {/* Gold Solar Accent Ribbon (Completely Filled) */}
         <path
-          d="M 115 0 C 132 45 168 85 245 92 L 430 92 L 430 0 Z"
+          d="M 85 64 C 150 66 225 64 320 54 L 440 48 L 440 0 L 175 0 C 145 22 110 44 85 64 Z"
           fill="#FBBF24"
         />
 
         {/* Vibrant Solar Orange Main Body (Completely Filled) */}
         <path
-          d="M 125 0 C 140 42 175 80 250 85 L 430 85 L 430 0 Z"
+          d="M 95 60 C 155 62 230 60 320 50 L 440 45 L 440 0 L 180 0 C 152 20 118 40 95 60 Z"
           fill="url(#gstOrangeFill)"
         />
+
+        {/* Perfectly Centered GST Number Inside Orange Banner */}
+        <text
+          x="310"
+          y="27"
+          fill="#ffffff"
+          fontSize="11.5"
+          fontWeight="900"
+          letterSpacing="0.08em"
+          textAnchor="middle"
+          fontFamily="system-ui, -apple-system, sans-serif"
+        >
+          {`GST No.: ${gst}`}
+        </text>
       </svg>
 
       {/* Top Header Section */}
       <div className="relative z-10">
-        {/* Main Header with Logo, Title and Filled Graphic GST Section */}
-        <div className="flex items-center justify-between relative pb-1 pt-1">
+        {/* Main Header with Logo and Title */}
+        <div className="flex items-center justify-between relative pb-1 pt-0.5">
           {/* Logo & Company Name */}
           <div className="flex items-center space-x-3.5">
             <div className="w-[72px] h-[72px] relative flex items-center justify-center flex-shrink-0">
@@ -146,12 +160,8 @@ export default function QuotationPreview({
             </div>
           </div>
 
-          {/* GST Display seamlessly integrated over the filled orange graphic */}
-          <div className="relative z-10 pr-4 pt-1 flex items-center">
-            <div className="text-white font-black text-xs tracking-wider whitespace-nowrap drop-shadow-xs">
-              GST No.: {gst}
-            </div>
-          </div>
+          {/* Right Spacer for Graphic Banner */}
+          <div className="w-64 h-12 flex-shrink-0"></div>
         </div>
 
         {/* Divider */}
