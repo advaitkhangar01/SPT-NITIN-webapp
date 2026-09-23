@@ -19,6 +19,8 @@ import {
   Calculator,
   FileText,
   Eye,
+  Landmark,
+  RotateCcw,
 } from "lucide-react";
 
 interface InvoiceEditorProps {
@@ -93,6 +95,35 @@ export default function InvoiceEditor({
     initialData?.paymentMethod || "Bank Transfer"
   );
   const [notes, setNotes] = useState<string>(initialData?.notes || "");
+
+  // Flexible Banking Details State (Per Invoice)
+  const [accountName, setAccountName] = useState<string>(
+    company.accountName || "SHASHIKALA POWER TECH"
+  );
+  const [bankName, setBankName] = useState<string>(
+    company.bankName || "Maharashtra State Co-operative Bank"
+  );
+  const [accountNumber, setAccountNumber] = useState<string>(
+    company.accountNumber || "0058107040000460"
+  );
+  const [ifscCode, setIfscCode] = useState<string>(
+    company.ifscCode || "MSCI0082056"
+  );
+  const [branch, setBranch] = useState<string>(
+    company.branch || "Nagpur Branch"
+  );
+  const [upiId, setUpiId] = useState<string>(
+    company.upiId || ""
+  );
+
+  const handleResetBankDefaults = () => {
+    setAccountName(company.accountName || "SHASHIKALA POWER TECH");
+    setBankName(company.bankName || "Maharashtra State Co-operative Bank");
+    setAccountNumber(company.accountNumber || "0058107040000460");
+    setIfscCode(company.ifscCode || "MSCI0082056");
+    setBranch(company.branch || "Nagpur Branch");
+    setUpiId(company.upiId || "");
+  };
 
   // Calculated totals
   const [subtotal, setSubtotal] = useState<number>(initialData?.subtotal || 0);
@@ -228,6 +259,12 @@ export default function InvoiceEditor({
       paymentStatus,
       paymentMethod,
       notes: notes.trim(),
+      accountName: accountName.trim(),
+      bankName: bankName.trim(),
+      accountNumber: accountNumber.trim(),
+      ifscCode: ifscCode.trim(),
+      branch: branch.trim(),
+      upiId: upiId.trim(),
     };
 
     try {
@@ -293,6 +330,16 @@ export default function InvoiceEditor({
     paymentMethod,
     notes,
     refNo,
+  };
+
+  const previewCompany: CompanySnapshot = {
+    ...company,
+    accountName,
+    bankName,
+    accountNumber,
+    ifscCode,
+    branch,
+    upiId,
   };
 
   return (
@@ -624,7 +671,117 @@ export default function InvoiceEditor({
             </button>
           </div>
 
-          {/* Section D: Payment & Totals */}
+          {/* Section D: Receiving Bank & Payment Details */}
+          <div className="space-y-3 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+              <div className="flex items-center space-x-1.5">
+                <Landmark className="w-4 h-4 text-[#0F4C81]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Receiving Bank & Payment Details
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={handleResetBankDefaults}
+                className="text-[11px] text-[#0F4C81] hover:underline flex items-center space-x-1 font-semibold"
+                title="Reset to company defaults"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset Defaults</span>
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Customize the beneficiary bank account displayed on this invoice for customer payment.
+            </p>
+
+            <div className="space-y-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                    Beneficiary / Account Name
+                  </label>
+                  <input
+                    type="text"
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    placeholder="SHASHIKALA POWER TECH"
+                    className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                    Bank Name
+                  </label>
+                  <input
+                    type="text"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    placeholder="Maharashtra State Co-operative Bank"
+                    className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                    Account Number
+                  </label>
+                  <input
+                    type="text"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                    placeholder="0058107040000460"
+                    className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-mono font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                    IFSC Code
+                  </label>
+                  <input
+                    type="text"
+                    value={ifscCode}
+                    onChange={(e) => setIfscCode(e.target.value)}
+                    placeholder="MSCI0082056"
+                    className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-mono font-bold uppercase"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                    Branch Name
+                  </label>
+                  <input
+                    type="text"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    placeholder="Nagpur Branch"
+                    className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                    UPI ID / VPA (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={upiId}
+                    onChange={(e) => setUpiId(e.target.value)}
+                    placeholder="e.g. 9527161595@okbizaxis"
+                    className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section E: Payment & Totals */}
           <div className="space-y-3 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
               Payment Status & Calculation
@@ -812,7 +969,7 @@ export default function InvoiceEditor({
               >
                 <InvoicePreview
                   data={previewData}
-                  company={company}
+                  company={previewCompany}
                   scale={1}
                 />
               </div>

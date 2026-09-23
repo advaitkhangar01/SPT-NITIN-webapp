@@ -59,7 +59,7 @@ export default function QuotationPreview({
   const tagline = company.tagline || "SOLAR & ENERGY SOLUTIONS";
   const gst = company.gstNumber || "27AJRPN3091N1ZE";
   const phone = company.phone || "+91 95271 61595";
-  const email = company.email || "contact@shashikalapowertech.com";
+  const email = company.email || "contact@shashikalapowertech.in";
   const address =
     company.address ||
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";

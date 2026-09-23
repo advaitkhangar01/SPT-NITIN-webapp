@@ -14,9 +14,9 @@ export interface CompanySnapshot {
   ifscCode?: string;
   bankName?: string;
   branch?: string;
+  upiId?: string;
   panNumber?: string;
 }
-
 
 export async function getCompanySettingsSnapshot(): Promise<CompanySnapshot> {
   let settings = await prisma.companySettings.findUnique({
@@ -35,9 +35,15 @@ export async function getCompanySettingsSnapshot(): Promise<CompanySnapshot> {
     tagline: settings.tagline,
     gstNumber: settings.gstNumber,
     phone: settings.phone,
-    email: settings.email,
+    email: settings.email || "contact@shashikalapowertech.in",
     address: settings.address,
     logoPath: settings.logoPath || "/logo.png",
+    accountName: settings.accountName || "SHASHIKALA POWER TECH",
+    accountNumber: settings.accountNumber || "0058107040000460",
+    ifscCode: settings.ifscCode || "MSCI0082056",
+    bankName: settings.bankName || "Maharashtra State Co-operative Bank",
+    branch: settings.branch || "Nagpur Branch",
+    upiId: settings.upiId || "",
   };
 }
 
@@ -48,7 +54,7 @@ export function parseCompanySnapshot(snapshotStr: string | null | undefined, fal
     ifscCode: "MSCI0082056",
     bankName: "Maharashtra State Co-operative Bank",
     branch: "Nagpur Branch",
-    panNumber: "AJRPN3091N",
+    upiId: "",
   };
 
   const defaultObj: CompanySnapshot = {
@@ -57,7 +63,7 @@ export function parseCompanySnapshot(snapshotStr: string | null | undefined, fal
     tagline: "SOLAR & ENERGY SOLUTIONS",
     gstNumber: "27AJRPN3091N1ZE",
     phone: "+91 95271 61595",
-    email: "contact@shashikalapowertech.com",
+    email: "contact@shashikalapowertech.in",
     address: "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034",
     logoPath: "/logo.png",
     ...defaultBankData,

@@ -20,7 +20,7 @@ async function main() {
         tagline: "SOLAR & ENERGY SOLUTIONS",
         gstNumber: "27AJRPN3091N1ZE",
         phone: "+91 95271 61595",
-        email: "contact@shashikalapowertech.com",
+        email: "contact@shashikalapowertech.in",
         address: "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034",
         logoPath: "/logo.png",
         quotationPrefix: "QT-",
@@ -29,6 +29,12 @@ async function main() {
         nextInvoiceNumber: 1,
         defaultValidityDays: 15,
         defaultGst: 18.0,
+        accountName: "SHASHIKALA POWER TECH",
+        accountNumber: "0058107040000460",
+        ifscCode: "MSCI0082056",
+        bankName: "Maharashtra State Co-operative Bank",
+        branch: "Nagpur Branch",
+        upiId: "",
       },
     });
     console.log("Default CompanySettings seeded.");

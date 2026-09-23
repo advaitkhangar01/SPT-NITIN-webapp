@@ -13,6 +13,7 @@ import {
   Shield,
   Trash2,
   KeyRound,
+  Landmark,
 } from "lucide-react";
 
 interface SettingsData {
@@ -30,6 +31,12 @@ interface SettingsData {
   nextInvoiceNumber: number;
   defaultValidityDays: number;
   defaultGst: number;
+  accountName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  bankName?: string;
+  branch?: string;
+  upiId?: string;
 }
 
 interface UserItem {
@@ -422,6 +429,107 @@ export default function SettingsPage() {
               />
             </div>
           </div>
+        </div>
+
+        {/* 3. Default Banking & Payment Collection Details */}
+        <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-6 space-y-4">
+          <div className="flex items-center space-x-2 pb-3 border-b border-slate-100">
+            <Landmark className="w-5 h-5 text-[#0F4C81]" />
+            <div>
+              <h2 className="text-sm font-black text-[#0F4C81] uppercase tracking-wide">
+                3. Default Banking & Payment Details
+              </h2>
+              <p className="text-[11px] text-slate-500">
+                These bank details will pre-fill invoices automatically. You can also customize them per-invoice in the invoice editor.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Beneficiary / Account Name
+              </label>
+              <input
+                type="text"
+                disabled={!isAdmin}
+                value={settings.accountName || ""}
+                onChange={(e) => handleSettingsChange("accountName", e.target.value)}
+                placeholder="SHASHIKALA POWER TECH"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-[#0F4C81] outline-none disabled:bg-slate-100 font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Bank Name
+              </label>
+              <input
+                type="text"
+                disabled={!isAdmin}
+                value={settings.bankName || ""}
+                onChange={(e) => handleSettingsChange("bankName", e.target.value)}
+                placeholder="Maharashtra State Co-operative Bank"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-[#0F4C81] outline-none disabled:bg-slate-100 font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Account Number
+              </label>
+              <input
+                type="text"
+                disabled={!isAdmin}
+                value={settings.accountNumber || ""}
+                onChange={(e) => handleSettingsChange("accountNumber", e.target.value)}
+                placeholder="0058107040000460"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-[#0F4C81] outline-none disabled:bg-slate-100 font-mono font-bold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                IFSC Code
+              </label>
+              <input
+                type="text"
+                disabled={!isAdmin}
+                value={settings.ifscCode || ""}
+                onChange={(e) => handleSettingsChange("ifscCode", e.target.value)}
+                placeholder="MSCI0082056"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-[#0F4C81] outline-none disabled:bg-slate-100 font-mono font-bold uppercase"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Branch Name
+              </label>
+              <input
+                type="text"
+                disabled={!isAdmin}
+                value={settings.branch || ""}
+                onChange={(e) => handleSettingsChange("branch", e.target.value)}
+                placeholder="Nagpur Branch"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-[#0F4C81] outline-none disabled:bg-slate-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                UPI ID / VPA (Optional)
+              </label>
+              <input
+                type="text"
+                disabled={!isAdmin}
+                value={settings.upiId || ""}
+                onChange={(e) => handleSettingsChange("upiId", e.target.value)}
+                placeholder="e.g. 9527161595@okbizaxis"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded focus:ring-1 focus:ring-[#0F4C81] outline-none disabled:bg-slate-100 font-mono"
+              />
+            </div>
+          </div>
 
           {isAdmin && (
             <div className="pt-3">
@@ -438,14 +546,14 @@ export default function SettingsPage() {
         </div>
       </form>
 
-      {/* 3. User Management (Admin Only) */}
+      {/* 4. User Management (Admin Only) */}
       {isAdmin && (
         <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="flex items-center space-x-2">
               <Users className="w-5 h-5 text-[#0F4C81]" />
               <h2 className="text-sm font-black text-[#0F4C81] uppercase tracking-wide">
-                3. User Management
+                4. User Management
               </h2>
             </div>
             <button

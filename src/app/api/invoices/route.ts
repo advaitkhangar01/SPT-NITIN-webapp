@@ -68,6 +68,12 @@ export async function POST(req: NextRequest) {
       paymentStatus,
       paymentMethod,
       notes,
+      accountName,
+      bankName,
+      accountNumber,
+      ifscCode,
+      branch,
+      upiId,
     } = body;
 
     if (!customerName || !invoiceDate || !items || items.length === 0) {
@@ -77,7 +83,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const companySnapshot = await getCompanySettingsSnapshot();
+    const baseSnapshot = await getCompanySettingsSnapshot();
+    const companySnapshot = {
+      ...baseSnapshot,
+      accountName: accountName?.trim() || baseSnapshot.accountName,
+      bankName: bankName?.trim() || baseSnapshot.bankName,
+      accountNumber: accountNumber?.trim() || baseSnapshot.accountNumber,
+      ifscCode: ifscCode?.trim() || baseSnapshot.ifscCode,
+      branch: branch?.trim() || baseSnapshot.branch,
+      upiId: upiId !== undefined ? upiId.trim() : (baseSnapshot.upiId || ""),
+    };
     const snapshotStr = JSON.stringify(companySnapshot);
 
     const invoice = await prisma.$transaction(async (tx) => {

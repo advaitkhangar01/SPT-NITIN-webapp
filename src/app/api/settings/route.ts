@@ -55,6 +55,12 @@ export async function PUT(req: NextRequest) {
       nextInvoiceNumber,
       defaultValidityDays,
       defaultGst,
+      accountName,
+      accountNumber,
+      ifscCode,
+      bankName,
+      branch,
+      upiId,
     } = body;
 
     const updated = await prisma.companySettings.upsert({
@@ -74,6 +80,12 @@ export async function PUT(req: NextRequest) {
         nextInvoiceNumber: Number(nextInvoiceNumber) || 1,
         defaultValidityDays: Number(defaultValidityDays) || 15,
         defaultGst: Number(defaultGst) || 18.0,
+        accountName: accountName || "SHASHIKALA POWER TECH",
+        accountNumber: accountNumber || "0058107040000460",
+        ifscCode: ifscCode || "MSCI0082056",
+        bankName: bankName || "Maharashtra State Co-operative Bank",
+        branch: branch || "Nagpur Branch",
+        upiId: upiId || "",
       },
       create: {
         id: "default",
@@ -91,6 +103,12 @@ export async function PUT(req: NextRequest) {
         nextInvoiceNumber: Number(nextInvoiceNumber) || 1,
         defaultValidityDays: Number(defaultValidityDays) || 15,
         defaultGst: Number(defaultGst) || 18.0,
+        accountName: accountName || "SHASHIKALA POWER TECH",
+        accountNumber: accountNumber || "0058107040000460",
+        ifscCode: ifscCode || "MSCI0082056",
+        bankName: bankName || "Maharashtra State Co-operative Bank",
+        branch: branch || "Nagpur Branch",
+        upiId: upiId || "",
       },
     });
 

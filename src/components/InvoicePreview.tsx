@@ -52,14 +52,11 @@ export default function InvoicePreview({
   const tagline = company.tagline || "SOLAR & ENERGY SOLUTIONS";
   const gst = company.gstNumber || "27AJRPN3091N1ZE";
   const phone = company.phone || "+91 95271 61595";
-  const email = company.email || "contact@shashikalapowertech.com";
+  const email = company.email || "contact@shashikalapowertech.in";
   const address =
     company.address ||
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";
   const logo = company.logoPath || "/logo.png";
-  const pan =
-    company.panNumber ||
-    (gst.length >= 12 ? gst.substring(2, 12) : "AJRPN3091N");
 
   // Calculate GST breakdown (50% CGST + 50% SGST standard intra-state)
   const totalGst = data.gstAmount || 0;
@@ -426,23 +423,31 @@ export default function InvoicePreview({
                     <span className="text-gray-500 font-bold">d. Bank & Branch:</span>
                     <span className="font-bold text-gray-900">
                       {company.bankName || "Maharashtra State Co-operative Bank"}
+                      {company.branch ? `, ${company.branch}` : ""}
                     </span>
                   </p>
-                  <p className="flex justify-between">
-                    <span className="text-gray-500 font-bold">e. GSTIN:</span>
-                    <span className="font-mono font-black">{gst}</span>
-                  </p>
+                  {company.upiId ? (
+                    <>
+                      <p className="flex justify-between">
+                        <span className="text-gray-500 font-bold">e. UPI / VPA:</span>
+                        <span className="font-mono font-black text-[#0F4C81]">{company.upiId}</span>
+                      </p>
+                      <p className="flex justify-between">
+                        <span className="text-gray-500 font-bold">f. GSTIN:</span>
+                        <span className="font-mono font-black">{gst}</span>
+                      </p>
+                    </>
+                  ) : (
+                    <p className="flex justify-between">
+                      <span className="text-gray-500 font-bold">e. GSTIN:</span>
+                      <span className="font-mono font-black">{gst}</span>
+                    </p>
+                  )}
                 </div>
               </td>
               <td className="w-1/2 p-2 align-top leading-tight font-bold flex flex-col justify-between h-full">
                 <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-gray-500 uppercase font-black text-[7.5px]">PAN:</span>
-                    <span className="font-mono text-[9px] tracking-wide bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300">
-                      {pan}
-                    </span>
-                  </div>
-                  <p className="text-[7.5px] text-gray-600 leading-normal italic font-medium">
+                  <p className="text-[7.5px] text-gray-600 leading-normal italic font-medium pt-1">
                     We declare that this invoice shows the actual price of the goods / services described and that all particulars are true and correct.
                   </p>
                 </div>

@@ -28,7 +28,7 @@ model CompanySettings {
   tagline              String   @default("SOLAR & ENERGY SOLUTIONS")
   gstNumber            String   @default("27AJRPN3091N1ZE")
   phone                String   @default("+91 95271 61595")
-  email                String   @default("contact@shashikalapowertech.com")
+  email                String   @default("contact@shashikalapowertech.in")
   address              String   @default("Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034")
   logoPath             String   @default("/logo.png")
   quotationPrefix      String   @default("QT-")
@@ -37,6 +37,12 @@ model CompanySettings {
   nextInvoiceNumber    Int      @default(1)
   defaultValidityDays  Int      @default(15)
   defaultGst           Float    @default(18.0)
+  accountName          String   @default("SHASHIKALA POWER TECH")
+  accountNumber        String   @default("0058107040000460")
+  ifscCode             String   @default("MSCI0082056")
+  bankName             String   @default("Maharashtra State Co-operative Bank")
+  branch               String   @default("Nagpur Branch")
+  upiId                String?  @default("")
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 }

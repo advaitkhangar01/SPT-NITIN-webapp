@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { allocateInvoiceNumber } from "@/lib/numbering";
-import { getCompanySettingsSnapshot } from "@/lib/company";
+import { getCompanySettingsSnapshot, parseCompanySnapshot } from "@/lib/company";
 import { formatDateDMY } from "@/lib/formatters";
 
 export async function POST(
@@ -28,8 +28,9 @@ export async function POST(
       return NextResponse.json({ error: "Source invoice not found" }, { status: 404 });
     }
 
-    const companySnapshot = await getCompanySettingsSnapshot();
-    const snapshotStr = JSON.stringify(companySnapshot);
+    const currentSettings = await getCompanySettingsSnapshot();
+    const sourceSnapshot = parseCompanySnapshot(source.companySnapshot, currentSettings);
+    const snapshotStr = JSON.stringify(sourceSnapshot);
 
     const duplicated = await prisma.$transaction(async (tx) => {
       const invoiceNumber = await allocateInvoiceNumber(tx);

@@ -58,6 +58,12 @@ export async function PUT(
       paymentStatus,
       paymentMethod,
       notes,
+      accountName,
+      bankName,
+      accountNumber,
+      ifscCode,
+      branch,
+      upiId,
     } = body;
 
     const existing = await prisma.invoice.findUnique({
@@ -67,6 +73,21 @@ export async function PUT(
     if (!existing) {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
+
+    let existingSnapshot: any = {};
+    try {
+      existingSnapshot = JSON.parse(existing.companySnapshot || "{}");
+    } catch {}
+
+    const updatedSnapshot = {
+      ...existingSnapshot,
+      accountName: accountName?.trim() || existingSnapshot.accountName || "SHASHIKALA POWER TECH",
+      bankName: bankName?.trim() || existingSnapshot.bankName || "Maharashtra State Co-operative Bank",
+      accountNumber: accountNumber?.trim() || existingSnapshot.accountNumber || "0058107040000460",
+      ifscCode: ifscCode?.trim() || existingSnapshot.ifscCode || "MSCI0082056",
+      branch: branch?.trim() || existingSnapshot.branch || "Nagpur Branch",
+      upiId: upiId !== undefined ? upiId.trim() : (existingSnapshot.upiId || ""),
+    };
 
     const updated = await prisma.$transaction(async (tx) => {
       await tx.invoiceItem.deleteMany({
@@ -90,6 +111,7 @@ export async function PUT(
           paymentStatus: paymentStatus || "UNPAID",
           paymentMethod: paymentMethod || "Bank Transfer",
           notes,
+          companySnapshot: JSON.stringify(updatedSnapshot),
           items: {
             create: items.map((item: any, idx: number) => ({
               sortOrder: idx,
