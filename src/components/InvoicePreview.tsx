@@ -121,7 +121,8 @@ export default function InvoicePreview({
                     <span className="text-gray-500 font-semibold">Phone:</span> {phone}
                   </p>
                   <p>
-                    <span className="text-gray-500 font-semibold">E-Mail:</span> {email}
+                    <span className="text-gray-500 font-semibold">E-Mail:</span>{" "}
+                    <span className="text-[#0F4C81] font-bold">{email}</span>
                   </p>
                   <p className="font-black text-black pt-1 text-[9px]">
                     GSTIN: {gst}

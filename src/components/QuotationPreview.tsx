@@ -157,6 +157,16 @@ export default function QuotationPreview({
               <p className="text-[9px] text-slate-500 tracking-wide mt-0.5">
                 MNRE Empaneled Rooftop Solar EPC & Engineering Services
               </p>
+              <div className="flex items-center space-x-3 text-[8.5px] text-slate-600 mt-1 font-semibold">
+                <span className="flex items-center gap-1">
+                  <Phone className="w-2.5 h-2.5 text-[#F37021]" />
+                  <span>{phone}</span>
+                </span>
+                <span className="flex items-center gap-1 text-[#0F4C81]">
+                  <Mail className="w-2.5 h-2.5 text-[#F37021]" />
+                  <span>{email}</span>
+                </span>
+              </div>
             </div>
           </div>
 
