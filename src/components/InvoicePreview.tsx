@@ -48,11 +48,11 @@ export default function InvoicePreview({
   company,
   scale = 1,
 }: InvoicePreviewProps) {
-  const compName = company.displayName || "SHASHIKALAA POWER TECK";
+  const compName = company.displayName || "SHASHIKALA POWER TECH";
   const tagline = company.tagline || "SOLAR & ENERGY SOLUTIONS";
   const gst = company.gstNumber || "27AJRPN3091N1ZE";
   const phone = company.phone || "+91 95271 61595";
-  const email = company.email || "shashikalapowertech@gmail.com";
+  const email = company.email || "contact@shashikalapowertech.com";
   const address =
     company.address ||
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";

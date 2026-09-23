@@ -41,7 +41,7 @@ export default async function HomePage() {
             Quick Action Desk
           </div>
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wide font-sans">
-            SHASHIKALAA POWER TECK
+            SHASHIKALA POWER TECH
           </h1>
           <p className="text-xs text-blue-200 tracking-wider">
             SOLAR & ENERGY SOLUTIONS • QUOTATION & INVOICE SYSTEM

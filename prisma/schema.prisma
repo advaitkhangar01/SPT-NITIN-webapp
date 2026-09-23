@@ -24,11 +24,11 @@ model User {
 model CompanySettings {
   id                   String   @id @default("default")
   companyName          String   @default("Shashikala Power Tech")
-  displayName          String   @default("SHASHIKALAA POWER TECK")
+  displayName          String   @default("SHASHIKALA POWER TECH")
   tagline              String   @default("SOLAR & ENERGY SOLUTIONS")
   gstNumber            String   @default("27AJRPN3091N1ZE")
   phone                String   @default("+91 95271 61595")
-  email                String   @default("shashikalapowertech@gmail.com")
+  email                String   @default("contact@shashikalapowertech.com")
   address              String   @default("Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034")
   logoPath             String   @default("/logo.png")
   quotationPrefix      String   @default("QT-")

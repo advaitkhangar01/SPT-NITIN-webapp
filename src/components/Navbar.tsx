@@ -82,12 +82,12 @@ export default function Navbar() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"
-              alt="Shashikala Power Teck Logo"
+              alt="Shashikala Power Tech Logo"
               className="h-8 w-8 sm:h-9 sm:w-9 object-contain rounded-lg bg-white p-0.5 shadow-xs flex-shrink-0"
             />
             <div className="flex flex-col min-w-0">
               <span className="text-xs sm:text-sm font-black tracking-wider leading-tight truncate">
-                SHASHIKALAA POWER TECK
+                SHASHIKALA POWER TECH
               </span>
               <span className="text-[8px] sm:text-[9px] text-slate-300 tracking-[0.12em] font-medium leading-tight truncate">
                 QUOTATION & INVOICE MAKER

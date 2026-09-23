@@ -43,7 +43,7 @@ export async function getCompanySettingsSnapshot(): Promise<CompanySnapshot> {
 
 export function parseCompanySnapshot(snapshotStr: string | null | undefined, fallback?: CompanySnapshot): CompanySnapshot {
   const defaultBankData = {
-    accountName: "SHASHIKALAA POWER TECK",
+    accountName: "SHASHIKALA POWER TECH",
     accountNumber: "0058107040000460",
     ifscCode: "MSCI0082056",
     bankName: "Maharashtra State Co-operative Bank",
@@ -53,11 +53,11 @@ export function parseCompanySnapshot(snapshotStr: string | null | undefined, fal
 
   const defaultObj: CompanySnapshot = {
     companyName: "Shashikala Power Tech",
-    displayName: "SHASHIKALAA POWER TECK",
+    displayName: "SHASHIKALA POWER TECH",
     tagline: "SOLAR & ENERGY SOLUTIONS",
     gstNumber: "27AJRPN3091N1ZE",
     phone: "+91 95271 61595",
-    email: "shashikalapowertech@gmail.com",
+    email: "contact@shashikalapowertech.com",
     address: "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034",
     logoPath: "/logo.png",
     ...defaultBankData,

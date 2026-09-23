@@ -55,11 +55,11 @@ export default function QuotationPreview({
   scale = 1,
 }: QuotationPreviewProps) {
   // Use company snapshot or fallback values
-  const compName = company.displayName || "SHASHIKALAA POWER TECK";
+  const compName = company.displayName || "SHASHIKALA POWER TECH";
   const tagline = company.tagline || "SOLAR & ENERGY SOLUTIONS";
   const gst = company.gstNumber || "27AJRPN3091N1ZE";
   const phone = company.phone || "+91 95271 61595";
-  const email = company.email || "shashikalapowertech@gmail.com";
+  const email = company.email || "contact@shashikalapowertech.com";
   const address =
     company.address ||
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";
@@ -80,10 +80,10 @@ export default function QuotationPreview({
         transformOrigin: "top center",
       }}
     >
-      {/* Top-Right Completely Filled Background Graphic with Perfectly Centered GST */}
+      {/* Top-Right Completely Filled Background Graphic (No overlap, safe 100px+ margin from brand title) */}
       <svg
-        className="absolute top-0 right-0 w-[440px] h-[75px] pointer-events-none z-0"
-        viewBox="0 0 440 75"
+        className="absolute top-0 right-0 w-[300px] h-[68px] pointer-events-none z-0"
+        viewBox="0 0 300 68"
         fill="none"
       >
         <defs>
@@ -99,28 +99,28 @@ export default function QuotationPreview({
 
         {/* Navy Blue Base Curve (Completely Filled) */}
         <path
-          d="M 60 72 C 140 75 220 72 320 62 L 440 55 L 440 0 L 160 0 C 130 25 90 50 60 72 Z"
+          d="M 25 65 C 80 67 150 63 220 54 L 300 48 L 300 0 L 105 0 C 75 22 45 44 25 65 Z"
           fill="url(#gstNavyFill)"
         />
 
         {/* Gold Solar Accent Ribbon (Completely Filled) */}
         <path
-          d="M 85 64 C 150 66 225 64 320 54 L 440 48 L 440 0 L 175 0 C 145 22 110 44 85 64 Z"
+          d="M 42 59 C 95 61 160 57 225 48 L 300 42 L 300 0 L 115 0 C 88 18 60 38 42 59 Z"
           fill="#FBBF24"
         />
 
         {/* Vibrant Solar Orange Main Body (Completely Filled) */}
         <path
-          d="M 95 60 C 155 62 230 60 320 50 L 440 45 L 440 0 L 180 0 C 152 20 118 40 95 60 Z"
+          d="M 50 55 C 100 57 165 53 230 44 L 300 38 L 300 0 L 120 0 C 92 16 68 35 50 55 Z"
           fill="url(#gstOrangeFill)"
         />
 
         {/* Perfectly Centered GST Number Inside Orange Banner */}
         <text
-          x="310"
-          y="27"
+          x="210"
+          y="24"
           fill="#ffffff"
-          fontSize="11.5"
+          fontSize="11"
           fontWeight="900"
           letterSpacing="0.08em"
           textAnchor="middle"
@@ -146,22 +146,22 @@ export default function QuotationPreview({
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
-                <h1 className="text-[23px] font-black tracking-tight text-[#0F4C81] leading-none uppercase font-sans">
+                <h1 className="text-[22px] font-black tracking-tight text-[#0F4C81] leading-none uppercase font-sans">
                   {compName}
                 </h1>
               </div>
-              <p className="text-[10.5px] font-bold tracking-[0.22em] text-slate-600 mt-1 uppercase font-sans flex items-center gap-1">
+              <p className="text-[10px] font-bold tracking-[0.22em] text-slate-600 mt-1 uppercase font-sans flex items-center gap-1">
                 <Sun className="w-3 h-3 text-[#F37021]" />
                 <span>{tagline}</span>
               </p>
-              <p className="text-[9.5px] font-medium text-slate-500 tracking-wide mt-0.5">
+              <p className="text-[9px] text-slate-500 tracking-wide mt-0.5">
                 MNRE Empaneled Rooftop Solar EPC & Engineering Services
               </p>
             </div>
           </div>
 
           {/* Right Spacer for Graphic Banner */}
-          <div className="w-64 h-12 flex-shrink-0"></div>
+          <div className="w-56 h-12 flex-shrink-0"></div>
         </div>
 
         {/* Divider */}

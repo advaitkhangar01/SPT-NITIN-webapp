@@ -52,12 +52,12 @@ function LoginForm() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.png"
-            alt="Shashikala Power Teck"
+            alt="Shashikala Power Tech"
             className="max-h-full max-w-full object-contain"
           />
         </div>
         <h1 className="text-xl font-black tracking-wider uppercase">
-          SHASHIKALAA POWER TECK
+          SHASHIKALA POWER TECH
         </h1>
         <p className="text-xs font-semibold tracking-widest text-blue-200 uppercase mt-0.5">
           SOLAR & ENERGY SOLUTIONS

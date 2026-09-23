@@ -16,11 +16,11 @@ async function main() {
       data: {
         id: "default",
         companyName: "Shashikala Power Tech",
-        displayName: "SHASHIKALAA POWER TECK",
+        displayName: "SHASHIKALA POWER TECH",
         tagline: "SOLAR & ENERGY SOLUTIONS",
         gstNumber: "27AJRPN3091N1ZE",
         phone: "+91 95271 61595",
-        email: "shashikalapowertech@gmail.com",
+        email: "contact@shashikalapowertech.com",
         address: "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034",
         logoPath: "/logo.png",
         quotationPrefix: "QT-",
