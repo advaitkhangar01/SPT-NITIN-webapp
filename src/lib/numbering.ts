@@ -9,37 +9,51 @@ export function formatDocNumber(prefix: string, number: number): string {
 }
 
 export async function peekNextQuotationNumber(): Promise<string> {
-  let settings = await prisma.companySettings.findUnique({
-    where: { id: "default" },
-  });
-  if (!settings) {
-    settings = await prisma.companySettings.create({
-      data: { id: "default" },
+  try {
+    let settings = await prisma.companySettings.findUnique({
+      where: { id: "default" },
     });
+    if (!settings) {
+      settings = await prisma.companySettings.create({
+        data: { id: "default" },
+      });
+    }
+    return formatDocNumber(settings.quotationPrefix || "QT", settings.nextQuotationNumber);
+  } catch (err) {
+    console.error("peekNextQuotationNumber error:", err);
+    return formatDocNumber("QT", 1);
   }
-  return formatDocNumber(settings.quotationPrefix || "QT", settings.nextQuotationNumber);
 }
 
 export async function peekNextInvoiceNumber(): Promise<string> {
-  let settings = await prisma.companySettings.findUnique({
-    where: { id: "default" },
-  });
-  if (!settings) {
-    settings = await prisma.companySettings.create({
-      data: { id: "default" },
+  try {
+    let settings = await prisma.companySettings.findUnique({
+      where: { id: "default" },
     });
+    if (!settings) {
+      settings = await prisma.companySettings.create({
+        data: { id: "default" },
+      });
+    }
+    return formatDocNumber(settings.invoicePrefix || "INV", settings.nextInvoiceNumber);
+  } catch (err) {
+    console.error("peekNextInvoiceNumber error:", err);
+    return formatDocNumber("INV", 1);
   }
-  return formatDocNumber(settings.invoicePrefix || "INV", settings.nextInvoiceNumber);
 }
 
 /**
  * Atomically increments and returns the next quotation number inside a transaction.
  */
 export async function allocateQuotationNumber(tx: any): Promise<string> {
-  const settings = await tx.companySettings.update({
+  const settings = await tx.companySettings.upsert({
     where: { id: "default" },
-    data: {
+    update: {
       nextQuotationNumber: { increment: 1 },
+    },
+    create: {
+      id: "default",
+      nextQuotationNumber: 2,
     },
   });
   const allocatedNumber = settings.nextQuotationNumber - 1;
@@ -50,10 +64,14 @@ export async function allocateQuotationNumber(tx: any): Promise<string> {
  * Atomically increments and returns the next invoice number inside a transaction.
  */
 export async function allocateInvoiceNumber(tx: any): Promise<string> {
-  const settings = await tx.companySettings.update({
+  const settings = await tx.companySettings.upsert({
     where: { id: "default" },
-    data: {
+    update: {
       nextInvoiceNumber: { increment: 1 },
+    },
+    create: {
+      id: "default",
+      nextInvoiceNumber: 2,
     },
   });
   const allocatedNumber = settings.nextInvoiceNumber - 1;

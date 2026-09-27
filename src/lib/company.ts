@@ -19,32 +19,37 @@ export interface CompanySnapshot {
 }
 
 export async function getCompanySettingsSnapshot(): Promise<CompanySnapshot> {
-  let settings = await prisma.companySettings.findUnique({
-    where: { id: "default" },
-  });
-
-  if (!settings) {
-    settings = await prisma.companySettings.create({
-      data: { id: "default" },
+  try {
+    let settings = await prisma.companySettings.findUnique({
+      where: { id: "default" },
     });
-  }
 
-  return {
-    companyName: settings.companyName,
-    displayName: settings.displayName,
-    tagline: settings.tagline,
-    gstNumber: settings.gstNumber,
-    phone: settings.phone,
-    email: settings.email || "contact@shashikalapowertech.in",
-    address: settings.address,
-    logoPath: settings.logoPath || "/logo.png",
-    accountName: settings.accountName || "SHASHIKALA POWER TECH",
-    accountNumber: settings.accountNumber || "0058107040000460",
-    ifscCode: settings.ifscCode || "MSCI0082056",
-    bankName: settings.bankName || "Maharashtra State Co-operative Bank",
-    branch: settings.branch || "Nagpur Branch",
-    upiId: settings.upiId || "",
-  };
+    if (!settings) {
+      settings = await prisma.companySettings.create({
+        data: { id: "default" },
+      });
+    }
+
+    return {
+      companyName: settings.companyName,
+      displayName: settings.displayName,
+      tagline: settings.tagline,
+      gstNumber: settings.gstNumber,
+      phone: settings.phone,
+      email: settings.email || "contact@shashikalapowertech.in",
+      address: settings.address,
+      logoPath: settings.logoPath || "/logo.png",
+      accountName: settings.accountName || "SHASHIKALA POWER TECH",
+      accountNumber: settings.accountNumber || "0058107040000460",
+      ifscCode: settings.ifscCode || "MSCI0082056",
+      bankName: settings.bankName || "Maharashtra State Co-operative Bank",
+      branch: settings.branch || "Nagpur Branch",
+      upiId: settings.upiId || "",
+    };
+  } catch (err) {
+    console.error("Error fetching company settings snapshot:", err);
+    return parseCompanySnapshot(null);
+  }
 }
 
 export function parseCompanySnapshot(snapshotStr: string | null | undefined, fallback?: CompanySnapshot): CompanySnapshot {
