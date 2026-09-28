@@ -18,6 +18,13 @@ export interface CompanySnapshot {
   panNumber?: string;
 }
 
+export function sanitizeBusinessEmail(email?: string | null): string {
+  if (!email || typeof email !== "string" || email.trim() === "" || email.toLowerCase().includes("@shashikalapowertech.com")) {
+    return "contact@shashikalapowertech.in";
+  }
+  return email.trim();
+}
+
 export async function getCompanySettingsSnapshot(): Promise<CompanySnapshot> {
   try {
     let settings = await prisma.companySettings.findUnique({
@@ -36,7 +43,7 @@ export async function getCompanySettingsSnapshot(): Promise<CompanySnapshot> {
       tagline: settings.tagline,
       gstNumber: settings.gstNumber,
       phone: settings.phone,
-      email: settings.email || "contact@shashikalapowertech.in",
+      email: sanitizeBusinessEmail(settings.email),
       address: settings.address,
       logoPath: settings.logoPath || "/logo.png",
       accountName: settings.accountName || "SHASHIKALA POWER TECH",
@@ -75,18 +82,22 @@ export function parseCompanySnapshot(snapshotStr: string | null | undefined, fal
   };
 
   if (!snapshotStr) {
-    return fallback ? { ...defaultBankData, ...fallback } : defaultObj;
+    const res = fallback ? { ...defaultBankData, ...fallback } : defaultObj;
+    return { ...res, email: sanitizeBusinessEmail(res.email) };
   }
 
   try {
     const parsed = JSON.parse(snapshotStr);
+    const resolvedEmail = sanitizeBusinessEmail(parsed.email || fallback?.email);
     return {
       ...defaultBankData,
       ...(fallback || {}),
       ...parsed,
+      email: resolvedEmail,
     };
   } catch (err) {
-    return fallback ? { ...defaultBankData, ...fallback } : defaultObj;
+    const res = fallback ? { ...defaultBankData, ...fallback } : defaultObj;
+    return { ...res, email: sanitizeBusinessEmail(res.email) };
   }
 }
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { formatIndianCurrency } from "@/lib/formatters";
-import { CompanySnapshot } from "@/lib/company";
+import { CompanySnapshot, sanitizeBusinessEmail } from "@/lib/company";
 import {
   MapPin,
   Phone,
@@ -59,7 +59,7 @@ export default function QuotationPreview({
   const tagline = company.tagline || "SOLAR & ENERGY SOLUTIONS";
   const gst = company.gstNumber || "27AJRPN3091N1ZE";
   const phone = company.phone || "+91 95271 61595";
-  const email = company.email || "contact@shashikalapowertech.in";
+  const email = sanitizeBusinessEmail(company.email);
   const address =
     company.address ||
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";
@@ -355,9 +355,13 @@ export default function QuotationPreview({
             <div className="text-[20px] font-black text-[#15803D] tracking-tight leading-none">
               {formatIndianCurrency(data.totalAmount)}
             </div>
-            {data.gstInclusive && (
+            {data.gstInclusive ? (
               <p className="text-[9.5px] text-slate-600 font-bold mt-0.5">
                 (Inclusive of GST & All Taxes)
+              </p>
+            ) : (
+              <p className="text-[9.5px] text-amber-700 font-bold mt-0.5">
+                (+ 18% GST Extra Applicable)
               </p>
             )}
           </div>

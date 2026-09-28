@@ -120,7 +120,7 @@ export function convertNumberToWords(amount: number | string | undefined | null)
 
   let words = "RUPEES " + numberToIndianWords(intPart).trim();
   if (decPart > 0) {
-    words += " AND " + convertChunk(decPart).trim() + "PAISE";
+    words += " AND " + convertChunk(decPart).trim() + " PAISE";
   }
   return words.trim() + " ONLY";
 }

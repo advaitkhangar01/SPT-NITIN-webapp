@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { validateInvoicePayload } from "@/lib/validations";
 
 export async function GET(
   req: NextRequest,
@@ -41,31 +42,6 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const {
-      invoiceDate,
-      dueDate,
-      customerName,
-      customerAddress,
-      customerMobile,
-      customerGst,
-      items,
-      subtotal,
-      gstAmount,
-      discount,
-      totalAmount,
-      amountPaid,
-      paymentStatus,
-      paymentMethod,
-      notes,
-      accountName,
-      bankName,
-      accountNumber,
-      ifscCode,
-      branch,
-      upiId,
-    } = body;
-
     const existing = await prisma.invoice.findUnique({
       where: { id: params.id },
     });
@@ -74,6 +50,28 @@ export async function PUT(
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
+    if (
+      session.role !== "ADMIN" &&
+      existing.createdBy !== session.name &&
+      existing.createdBy !== session.username
+    ) {
+      return NextResponse.json(
+        { error: "Forbidden: You can only update invoices created by you" },
+        { status: 403 }
+      );
+    }
+
+    const body = await req.json();
+    const validation = validateInvoicePayload(body);
+    if (!validation.success || !validation.data) {
+      return NextResponse.json(
+        { error: validation.error || "Invalid invoice data" },
+        { status: 400 }
+      );
+    }
+
+    const validData = validation.data;
+
     let existingSnapshot: any = {};
     try {
       existingSnapshot = JSON.parse(existing.companySnapshot || "{}");
@@ -81,12 +79,12 @@ export async function PUT(
 
     const updatedSnapshot = {
       ...existingSnapshot,
-      accountName: accountName?.trim() || existingSnapshot.accountName || "SHASHIKALA POWER TECH",
-      bankName: bankName?.trim() || existingSnapshot.bankName || "Maharashtra State Co-operative Bank",
-      accountNumber: accountNumber?.trim() || existingSnapshot.accountNumber || "0058107040000460",
-      ifscCode: ifscCode?.trim() || existingSnapshot.ifscCode || "MSCI0082056",
-      branch: branch?.trim() || existingSnapshot.branch || "Nagpur Branch",
-      upiId: upiId !== undefined ? upiId.trim() : (existingSnapshot.upiId || ""),
+      accountName: validData.accountName || existingSnapshot.accountName || "SHASHIKALA POWER TECH",
+      bankName: validData.bankName || existingSnapshot.bankName || "Maharashtra State Co-operative Bank",
+      accountNumber: validData.accountNumber || existingSnapshot.accountNumber || "0058107040000460",
+      ifscCode: validData.ifscCode || existingSnapshot.ifscCode || "MSCI0082056",
+      branch: validData.branch || existingSnapshot.branch || "Nagpur Branch",
+      upiId: validData.upiId !== undefined ? validData.upiId : (existingSnapshot.upiId || ""),
     };
 
     const updated = await prisma.$transaction(async (tx) => {
@@ -97,29 +95,29 @@ export async function PUT(
       const inv = await tx.invoice.update({
         where: { id: params.id },
         data: {
-          invoiceDate,
-          dueDate,
-          customerName,
-          customerAddress,
-          customerMobile,
-          customerGst,
-          subtotal: Number(subtotal) || 0,
-          gstAmount: Number(gstAmount) || 0,
-          discount: Number(discount) || 0,
-          totalAmount: Number(totalAmount) || 0,
-          amountPaid: Number(amountPaid) || 0,
-          paymentStatus: paymentStatus || "UNPAID",
-          paymentMethod: paymentMethod || "Bank Transfer",
-          notes,
+          invoiceDate: validData.invoiceDate,
+          dueDate: validData.dueDate,
+          customerName: validData.customerName,
+          customerAddress: validData.customerAddress,
+          customerMobile: validData.customerMobile,
+          customerGst: validData.customerGst,
+          subtotal: validData.subtotal,
+          gstAmount: validData.gstAmount,
+          discount: validData.discount,
+          totalAmount: validData.totalAmount,
+          amountPaid: validData.amountPaid,
+          paymentStatus: validData.paymentStatus,
+          paymentMethod: validData.paymentMethod,
+          notes: validData.notes,
           companySnapshot: JSON.stringify(updatedSnapshot),
           items: {
-            create: items.map((item: any, idx: number) => ({
-              sortOrder: idx,
+            create: validData.items.map((item) => ({
+              sortOrder: item.sortOrder,
               description: item.description,
-              quantity: Number(item.quantity) || 1,
-              rate: Number(item.rate) || 0,
-              gstRate: Number(item.gstRate) || 18,
-              amount: Number(item.amount) || 0,
+              quantity: item.quantity,
+              rate: item.rate,
+              gstRate: item.gstRate,
+              amount: item.amount,
             })),
           },
         },
@@ -149,16 +147,23 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (session.role !== "ADMIN") {
-      const invoice = await prisma.invoice.findUnique({
-        where: { id: params.id },
-      });
-      if (invoice && invoice.createdBy !== session.name && invoice.createdBy !== session.username) {
-        return NextResponse.json(
-          { error: "Only admins can delete this invoice" },
-          { status: 403 }
-        );
-      }
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!invoice) {
+      return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+    }
+
+    if (
+      session.role !== "ADMIN" &&
+      invoice.createdBy !== session.name &&
+      invoice.createdBy !== session.username
+    ) {
+      return NextResponse.json(
+        { error: "Forbidden: Only admins or the creator can delete this invoice" },
+        { status: 403 }
+      );
     }
 
     await prisma.invoice.delete({

@@ -3,9 +3,17 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "shashikala-power-tech-super-secure-secret-key-2026"
-);
+export function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("JWT_SECRET environment variable is missing in production!");
+    }
+    return new TextEncoder().encode("shashikala-power-tech-dev-secret-key-32chars-min");
+  }
+  return new TextEncoder().encode(secret);
+}
+
 const COOKIE_NAME = "spt_session";
 
 export interface SessionPayload {
@@ -25,16 +33,18 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export async function createSessionToken(payload: SessionPayload): Promise<string> {
+  const jwtSecret = getJwtSecret();
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(JWT_SECRET);
+    .sign(jwtSecret);
 }
 
 export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const jwtSecret = getJwtSecret();
+    const { payload } = await jwtVerify(token, jwtSecret);
     return payload as unknown as SessionPayload;
   } catch (err) {
     return null;

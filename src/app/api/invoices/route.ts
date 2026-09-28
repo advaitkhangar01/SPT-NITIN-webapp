@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { allocateInvoiceNumber } from "@/lib/numbering";
 import { getCompanySettingsSnapshot } from "@/lib/company";
+import { validateInvoicePayload } from "@/lib/validations";
 
 export async function GET(req: NextRequest) {
   try {
@@ -51,47 +52,24 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const {
-      quotationId,
-      invoiceDate,
-      dueDate,
-      customerName,
-      customerAddress,
-      customerMobile,
-      customerGst,
-      items,
-      subtotal,
-      gstAmount,
-      discount,
-      totalAmount,
-      amountPaid,
-      paymentStatus,
-      paymentMethod,
-      notes,
-      accountName,
-      bankName,
-      accountNumber,
-      ifscCode,
-      branch,
-      upiId,
-    } = body;
-
-    if (!customerName || !invoiceDate || !items || items.length === 0) {
+    const validation = validateInvoicePayload(body);
+    if (!validation.success || !validation.data) {
       return NextResponse.json(
-        { error: "Missing required invoice fields" },
+        { error: validation.error || "Invalid invoice data" },
         { status: 400 }
       );
     }
 
+    const validData = validation.data;
     const baseSnapshot = await getCompanySettingsSnapshot();
     const companySnapshot = {
       ...baseSnapshot,
-      accountName: accountName?.trim() || baseSnapshot.accountName,
-      bankName: bankName?.trim() || baseSnapshot.bankName,
-      accountNumber: accountNumber?.trim() || baseSnapshot.accountNumber,
-      ifscCode: ifscCode?.trim() || baseSnapshot.ifscCode,
-      branch: branch?.trim() || baseSnapshot.branch,
-      upiId: upiId !== undefined ? upiId.trim() : (baseSnapshot.upiId || ""),
+      accountName: validData.accountName || baseSnapshot.accountName,
+      bankName: validData.bankName || baseSnapshot.bankName,
+      accountNumber: validData.accountNumber || baseSnapshot.accountNumber,
+      ifscCode: validData.ifscCode || baseSnapshot.ifscCode,
+      branch: validData.branch || baseSnapshot.branch,
+      upiId: validData.upiId !== undefined ? validData.upiId : (baseSnapshot.upiId || ""),
     };
     const snapshotStr = JSON.stringify(companySnapshot);
 
@@ -101,31 +79,31 @@ export async function POST(req: NextRequest) {
       const created = await tx.invoice.create({
         data: {
           invoiceNumber,
-          quotationId: quotationId || null,
-          invoiceDate,
-          dueDate: dueDate || invoiceDate,
-          customerName,
-          customerAddress: customerAddress || "",
-          customerMobile: customerMobile || "",
-          customerGst: customerGst || "",
-          subtotal: Number(subtotal) || 0,
-          gstAmount: Number(gstAmount) || 0,
-          discount: Number(discount) || 0,
-          totalAmount: Number(totalAmount) || 0,
-          amountPaid: Number(amountPaid) || 0,
-          paymentStatus: paymentStatus || "UNPAID",
-          paymentMethod: paymentMethod || "Bank Transfer",
-          notes: notes || "",
+          quotationId: validData.quotationId || null,
+          invoiceDate: validData.invoiceDate,
+          dueDate: validData.dueDate,
+          customerName: validData.customerName,
+          customerAddress: validData.customerAddress,
+          customerMobile: validData.customerMobile,
+          customerGst: validData.customerGst,
+          subtotal: validData.subtotal,
+          gstAmount: validData.gstAmount,
+          discount: validData.discount,
+          totalAmount: validData.totalAmount,
+          amountPaid: validData.amountPaid,
+          paymentStatus: validData.paymentStatus,
+          paymentMethod: validData.paymentMethod,
+          notes: validData.notes,
           companySnapshot: snapshotStr,
           createdBy: session.name || session.username,
           items: {
-            create: items.map((item: any, idx: number) => ({
-              sortOrder: idx,
+            create: validData.items.map((item) => ({
+              sortOrder: item.sortOrder,
               description: item.description,
-              quantity: Number(item.quantity) || 1,
-              rate: Number(item.rate) || 0,
-              gstRate: Number(item.gstRate) || 18,
-              amount: Number(item.amount) || 0,
+              quantity: item.quantity,
+              rate: item.rate,
+              gstRate: item.gstRate,
+              amount: item.amount,
             })),
           },
         },

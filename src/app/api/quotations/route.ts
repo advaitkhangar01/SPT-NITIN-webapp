@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { allocateQuotationNumber } from "@/lib/numbering";
 import { getCompanySettingsSnapshot } from "@/lib/company";
+import { validateQuotationPayload } from "@/lib/validations";
 
 export async function GET(req: NextRequest) {
   try {
@@ -47,26 +48,15 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const {
-      date,
-      customerName,
-      proposedSystem,
-      connectionType,
-      systemCapacity,
-      estimatedGeneration,
-      validityDays,
-      totalAmount,
-      gstInclusive,
-      investmentNote,
-      items,
-    } = body;
-
-    if (!customerName || !date || !items || items.length === 0) {
+    const validation = validateQuotationPayload(body);
+    if (!validation.success || !validation.data) {
       return NextResponse.json(
-        { error: "Missing required quotation fields" },
+        { error: validation.error || "Invalid quotation data" },
         { status: 400 }
       );
     }
+
+    const validData = validation.data;
 
     // Capture frozen snapshot of current company settings
     const companySnapshot = await getCompanySettingsSnapshot();
@@ -79,27 +69,25 @@ export async function POST(req: NextRequest) {
       const created = await tx.quotation.create({
         data: {
           quotationNumber,
-          date,
-          customerName,
-          proposedSystem: proposedSystem || "On-Grid Rooftop Solar",
-          connectionType: connectionType || "LT 1-Phase Grid Connected",
-          systemCapacity: String(systemCapacity),
-          estimatedGeneration: String(estimatedGeneration),
-          validityDays: Number(validityDays) || 15,
-          totalAmount: Number(totalAmount) || 0,
-          gstInclusive: gstInclusive ?? true,
-          investmentNote:
-            investmentNote ||
-            "Includes all materials, transport, installation & net-metering support.",
+          date: validData.date,
+          customerName: validData.customerName,
+          proposedSystem: validData.proposedSystem,
+          connectionType: validData.connectionType,
+          systemCapacity: validData.systemCapacity,
+          estimatedGeneration: validData.estimatedGeneration,
+          validityDays: validData.validityDays,
+          totalAmount: validData.totalAmount,
+          gstInclusive: validData.gstInclusive,
+          investmentNote: validData.investmentNote,
           companySnapshot: snapshotStr,
           createdBy: session.name || session.username,
           items: {
-            create: items.map((item: any, idx: number) => ({
-              sortOrder: idx,
+            create: validData.items.map((item) => ({
+              sortOrder: item.sortOrder,
               component: item.component,
-              specification: item.specification || "",
-              brandModel: item.brandModel || "",
-              quantity: item.quantity || "",
+              specification: item.specification,
+              brandModel: item.brandModel,
+              quantity: item.quantity,
             })),
           },
         },

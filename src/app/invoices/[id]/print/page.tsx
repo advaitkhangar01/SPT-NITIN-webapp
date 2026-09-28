@@ -1,6 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import InvoicePreview from "@/components/InvoicePreview";
+import AutoPrintTrigger from "@/components/AutoPrintTrigger";
 import { prisma } from "@/lib/prisma";
 import { parseCompanySnapshot, getCompanySettingsSnapshot } from "@/lib/company";
 
@@ -63,19 +64,7 @@ export default async function InvoicePrintPage({
         scale={1}
       />
 
-      {searchParams?.autoPrint === "true" && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.onload = function() {
-                setTimeout(function() {
-                  window.print();
-                }, 300);
-              };
-            `,
-          }}
-        />
-      )}
+      {searchParams?.autoPrint === "true" && <AutoPrintTrigger />}
     </div>
   );
 }

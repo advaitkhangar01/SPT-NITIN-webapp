@@ -38,6 +38,12 @@ async function main() {
       },
     });
     console.log("Default CompanySettings seeded.");
+  } else if (existingSettings.email && existingSettings.email.includes(".com")) {
+    await prisma.companySettings.update({
+      where: { id: "default" },
+      data: { email: "contact@shashikalapowertech.in" },
+    });
+    console.log("Updated CompanySettings email to contact@shashikalapowertech.in");
   }
 
   // Seed default admin user: nitin / admin123 (with mustChangePassword: true)

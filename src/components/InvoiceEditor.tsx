@@ -155,16 +155,23 @@ export default function InvoiceEditor({
     let calculatedGst = 0;
 
     items.forEach((item) => {
-      const base = item.quantity * item.rate;
-      const gst = base * (item.gstRate / 100);
+      const q = Math.max(0, Number(item.quantity) || 0);
+      const r = Math.max(0, Number(item.rate) || 0);
+      const g = Math.max(0, Number(item.gstRate) || 0);
+      const base = q * r;
+      const gst = base * (g / 100);
       calculatedSubtotal += base;
       calculatedGst += gst;
     });
 
-    const calculatedTotal = Math.round(calculatedSubtotal + calculatedGst - discount);
-    setSubtotal(Math.round(calculatedSubtotal));
-    setGstAmount(Math.round(calculatedGst));
-    setTotalAmount(calculatedTotal);
+    const safeDiscount = Math.max(0, Number(discount) || 0);
+    const sub = Math.round(calculatedSubtotal);
+    const gst = Math.round(calculatedGst);
+    const total = Math.max(0, sub + gst - safeDiscount);
+
+    setSubtotal(sub);
+    setGstAmount(gst);
+    setTotalAmount(total);
   }, [items, discount]);
 
   // Update line item
@@ -177,27 +184,32 @@ export default function InvoiceEditor({
       const updated = [...prev];
       const item = { ...updated[index], [field]: val };
 
-      // Recalculate item line total amount
-      const q = field === "quantity" ? Number(val) || 0 : item.quantity;
-      const r = field === "rate" ? Number(val) || 0 : item.rate;
-      const g = field === "gstRate" ? Number(val) || 0 : item.gstRate;
-      const base = q * r;
-      item.amount = Math.round(base * (1 + g / 100));
+      // Recalculate item line taxable amount (Quantity * Rate)
+      const q = Math.max(0, field === "quantity" ? Number(val) || 0 : Number(item.quantity) || 0);
+      const r = Math.max(0, field === "rate" ? Number(val) || 0 : Number(item.rate) || 0);
+      const g = Math.max(0, field === "gstRate" ? Number(val) || 0 : Number(item.gstRate) || 0);
+      item.quantity = q;
+      item.rate = r;
+      item.gstRate = g;
+      item.amount = Math.round(q * r);
 
       updated[index] = item;
       return updated;
     });
   };
 
-  // Helper: auto-calculate base rate from gross amount
+  // Helper: auto-calculate base rate from gross amount (all-inclusive package price)
   const handleSetGrossAmount = (index: number, gross: number) => {
     setItems((prev) => {
       const updated = [...prev];
       const item = { ...updated[index] };
-      const gstFactor = 1 + item.gstRate / 100;
-      const baseRate = Math.round(gross / gstFactor / (item.quantity || 1));
+      const safeGross = Math.max(0, Number(gross) || 0);
+      const g = Math.max(0, Number(item.gstRate) || 18);
+      const q = Math.max(1, Number(item.quantity) || 1);
+      const gstFactor = 1 + g / 100;
+      const baseRate = Math.round(safeGross / gstFactor / q);
       item.rate = baseRate;
-      item.amount = gross;
+      item.amount = Math.round(q * baseRate);
       updated[index] = item;
       return updated;
     });
@@ -646,7 +658,7 @@ export default function InvoiceEditor({
 
                       <div className="col-span-2 sm:col-span-1">
                         <label className="block text-[10px] text-slate-500 font-semibold mb-0.5">
-                          Amount (Gross)
+                          Taxable (Base)
                         </label>
                         <input
                           type="text"
@@ -655,6 +667,44 @@ export default function InvoiceEditor({
                           className="w-full text-xs px-2 py-1 border border-slate-200 rounded bg-slate-100 text-slate-800 font-bold outline-none cursor-default"
                         />
                       </div>
+                    </div>
+
+                    {/* Line Item Tax Summary & Inclusive Quick-Setter */}
+                    <div className="flex items-center justify-between text-[10px] pt-1 border-t border-slate-200/60 text-slate-600">
+                      <div className="flex items-center space-x-2">
+                        <span>
+                          GST ({item.gstRate}%):{" "}
+                          <span className="font-semibold text-slate-700">
+                            {formatIndianCurrency(Math.round(item.amount * (item.gstRate / 100)))}
+                          </span>
+                        </span>
+                        <span>•</span>
+                        <span>
+                          Total Incl. GST:{" "}
+                          <span className="font-bold text-[#0F4C81]">
+                            {formatIndianCurrency(Math.round(item.amount * (1 + item.gstRate / 100)))}
+                          </span>
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentGross = Math.round(item.amount * (1 + item.gstRate / 100)) || 210000;
+                          const input = window.prompt(
+                            "Enter desired Total Amount (including GST) in ₹ for this item:",
+                            String(currentGross)
+                          );
+                          if (input !== null) {
+                            const val = parseFloat(input.replace(/[^0-9.]/g, ""));
+                            if (!isNaN(val) && val > 0) {
+                              handleSetGrossAmount(idx, val);
+                            }
+                          }
+                        }}
+                        className="text-[#0F4C81] hover:underline font-semibold text-[10px]"
+                      >
+                        Set from Total (Incl. GST)
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -831,7 +881,19 @@ export default function InvoiceEditor({
                 <input
                   type="number"
                   value={amountPaid}
-                  onChange={(e) => setAmountPaid(Number(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const paid = Math.max(0, Number(e.target.value) || 0);
+                    setAmountPaid(paid);
+                    if (totalAmount > 0) {
+                      if (paid >= totalAmount) {
+                        setPaymentStatus("PAID");
+                      } else if (paid > 0) {
+                        setPaymentStatus("PARTIALLY PAID");
+                      } else {
+                        setPaymentStatus("UNPAID");
+                      }
+                    }
+                  }}
                   placeholder="0"
                   className="w-full text-xs px-3 py-1.5 border border-slate-300 rounded bg-white outline-none"
                 />
@@ -844,7 +906,7 @@ export default function InvoiceEditor({
                 <input
                   type="number"
                   value={discount}
-                  onChange={(e) => setDiscount(Number(e.target.value) || 0)}
+                  onChange={(e) => setDiscount(Math.max(0, Number(e.target.value) || 0))}
                   placeholder="0"
                   className="w-full text-xs px-3 py-1.5 border border-slate-300 rounded bg-white outline-none"
                 />

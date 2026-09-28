@@ -2,7 +2,7 @@
 
 import React from "react";
 import { formatIndianCurrency, convertNumberToWords } from "@/lib/formatters";
-import { CompanySnapshot } from "@/lib/company";
+import { CompanySnapshot, sanitizeBusinessEmail } from "@/lib/company";
 
 export interface InvoiceItemData {
   id?: string;
@@ -52,19 +52,25 @@ export default function InvoicePreview({
   const tagline = company.tagline || "SOLAR & ENERGY SOLUTIONS";
   const gst = company.gstNumber || "27AJRPN3091N1ZE";
   const phone = company.phone || "+91 95271 61595";
-  const email = company.email || "contact@shashikalapowertech.in";
+  const email = sanitizeBusinessEmail(company.email);
   const address =
     company.address ||
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";
   const logo = company.logoPath || "/logo.png";
 
   // Calculate GST breakdown (50% CGST + 50% SGST standard intra-state)
-  const totalGst = data.gstAmount || 0;
+  const totalGst = Math.round((Number(data.gstAmount) || 0) * 100) / 100;
   const cgstAmount = Math.round((totalGst / 2) * 100) / 100;
   const sgstAmount = Math.round((totalGst - cgstAmount) * 100) / 100;
+  const subtotal = Math.round((Number(data.subtotal) || 0) * 100) / 100;
+  const discount = Math.round((Number(data.discount) || 0) * 100) / 100;
+  const totalAmount = Math.round((Number(data.totalAmount) || Math.max(0, subtotal + totalGst - discount)) * 100) / 100;
+  const amountPaid = Math.round((Number(data.amountPaid) || 0) * 100) / 100;
+  const balanceDue = Math.max(0, Math.round((totalAmount - amountPaid) * 100) / 100);
+
   const effectiveGstPercent =
-    data.subtotal > 0
-      ? Math.round((totalGst / data.subtotal) * 100)
+    subtotal > 0
+      ? Math.round((totalGst / subtotal) * 100)
       : 18;
   const halfGstPercent = (effectiveGstPercent / 2).toFixed(1).replace(/\.0$/, "");
 
@@ -240,28 +246,35 @@ export default function InvoicePreview({
           </thead>
           <tbody>
             {data.items && data.items.length > 0 ? (
-              data.items.map((item, idx) => (
-                <tr key={idx} className="border-b border-gray-100 align-top">
-                  <td className="py-2 text-center border-r border-black text-gray-500 font-normal">
-                    {idx + 1}
-                  </td>
-                  <td className="py-2 px-2 border-r border-black text-gray-900 leading-snug text-left">
-                    <div className="font-bold text-[9px]">{item.description}</div>
-                  </td>
-                  <td className="py-2 text-center border-r border-black text-gray-700">
-                    {item.quantity}
-                  </td>
-                  <td className="py-2 text-center border-r border-black text-gray-700 font-mono">
-                    {formatIndianCurrency(item.rate)}
-                  </td>
-                  <td className="py-2 text-center border-r border-black text-gray-600 font-medium italic">
-                    {item.per || "Set"}
-                  </td>
-                  <td className="py-2 px-2 text-right text-gray-900 font-mono font-bold">
-                    {formatIndianCurrency(item.amount)}
-                  </td>
-                </tr>
-              ))
+              data.items.map((item, idx) => {
+                const qty = Number(item.quantity) || 0;
+                const rate = Number(item.rate) || 0;
+                // Horizontal consistency: Taxable value = Quantity * Rate
+                const lineTaxable = (qty > 0 && rate > 0) ? Math.round(qty * rate) : (Number(item.amount) || 0);
+
+                return (
+                  <tr key={idx} className="border-b border-gray-100 align-top">
+                    <td className="py-2 text-center border-r border-black text-gray-500 font-normal">
+                      {idx + 1}
+                    </td>
+                    <td className="py-2 px-2 border-r border-black text-gray-900 leading-snug text-left">
+                      <div className="font-bold text-[9px]">{item.description}</div>
+                    </td>
+                    <td className="py-2 text-center border-r border-black text-gray-700">
+                      {qty}
+                    </td>
+                    <td className="py-2 text-center border-r border-black text-gray-700 font-mono">
+                      {formatIndianCurrency(rate)}
+                    </td>
+                    <td className="py-2 text-center border-r border-black text-gray-600 font-medium italic">
+                      {item.per || "Set"}
+                    </td>
+                    <td className="py-2 px-2 text-right text-gray-900 font-mono font-bold">
+                      {formatIndianCurrency(lineTaxable)}
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={6} className="py-4 text-center text-gray-400">
@@ -277,7 +290,7 @@ export default function InvoicePreview({
                 SUB TOTAL
               </td>
               <td className="py-1 px-2 text-right font-black font-mono">
-                {formatIndianCurrency(data.subtotal)}
+                {formatIndianCurrency(subtotal)}
               </td>
             </tr>
             <tr className="border-b border-gray-200">
@@ -298,14 +311,14 @@ export default function InvoicePreview({
                 {formatIndianCurrency(sgstAmount)}
               </td>
             </tr>
-            {data.discount > 0 && (
+            {discount > 0 && (
               <tr className="border-b border-black text-emerald-700">
                 <td className="py-1 border-r border-black" colSpan={4}></td>
                 <td className="py-1 border-r border-black text-center font-black uppercase text-[7px]">
                   DISCOUNT
                 </td>
                 <td className="py-1 px-2 text-right font-black font-mono">
-                  -{formatIndianCurrency(data.discount)}
+                  -{formatIndianCurrency(discount)}
                 </td>
               </tr>
             )}
@@ -315,9 +328,31 @@ export default function InvoicePreview({
               </td>
               <td className="py-1.5 border-r border-black text-center text-[7.5px]">Rupees</td>
               <td className="py-1.5 px-2 text-right text-[#0F4C81] font-black text-xs font-mono">
-                {formatIndianCurrency(data.totalAmount)}
+                {formatIndianCurrency(totalAmount)}
               </td>
             </tr>
+            {amountPaid > 0 && (
+              <>
+                <tr className="border-b border-gray-200 text-slate-700">
+                  <td className="py-1 border-r border-black" colSpan={4}></td>
+                  <td className="py-1 border-r border-black text-center font-bold uppercase text-[7px]">
+                    AMOUNT PAID
+                  </td>
+                  <td className="py-1 px-2 text-right font-bold font-mono text-emerald-700">
+                    {formatIndianCurrency(amountPaid)}
+                  </td>
+                </tr>
+                <tr className="border-b border-black bg-amber-50/60 font-black">
+                  <td className="py-1 border-r border-black" colSpan={4}></td>
+                  <td className="py-1 border-r border-black text-center font-black uppercase text-[7px] text-amber-900">
+                    BALANCE DUE
+                  </td>
+                  <td className="py-1 px-2 text-right font-black font-mono text-amber-900">
+                    {formatIndianCurrency(balanceDue)}
+                  </td>
+                </tr>
+              </>
+            )}
           </tbody>
         </table>
 
@@ -351,7 +386,7 @@ export default function InvoicePreview({
             <tr className="align-middle">
               <td className="py-1 border-r border-black text-[7.5px] font-mono">{gst}</td>
               <td className="py-1 border-r border-black font-mono">
-                {formatIndianCurrency(data.subtotal)}
+                {formatIndianCurrency(subtotal)}
               </td>
               <td className="py-1 border-r border-black">{halfGstPercent}%</td>
               <td className="py-1 border-r border-black font-mono">
@@ -368,7 +403,7 @@ export default function InvoicePreview({
             <tr className="bg-gray-50 border-t border-black font-black uppercase text-[7px]">
               <td className="py-1 border-r border-black text-left px-2">TOTAL</td>
               <td className="py-1 border-r border-black font-mono">
-                {formatIndianCurrency(data.subtotal)}
+                {formatIndianCurrency(subtotal)}
               </td>
               <td className="py-1 border-r border-black"></td>
               <td className="py-1 border-r border-black font-mono">
@@ -388,7 +423,7 @@ export default function InvoicePreview({
         {/* Total Amount in Words Banner */}
         <div className="w-full bg-[#0F4C81] text-white px-2.5 py-1 text-[7.5px] font-black uppercase tracking-wider border border-black border-t-0 flex items-center justify-between">
           <span>Total Amount (in words):</span>
-          <span className="font-extrabold">{convertNumberToWords(data.totalAmount)}</span>
+          <span className="font-extrabold">{convertNumberToWords(totalAmount)}</span>
         </div>
 
         {/* Accounts Details & Legal Declaration */}

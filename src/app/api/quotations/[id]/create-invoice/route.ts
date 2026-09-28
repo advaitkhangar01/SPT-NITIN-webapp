@@ -51,7 +51,7 @@ export async function POST(
         quantity: 1,
         rate: subtotal,
         gstRate: gstRate,
-        amount: total,
+        amount: subtotal,
       },
     ];
 

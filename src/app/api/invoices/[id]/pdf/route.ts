@@ -10,7 +10,11 @@ export async function GET(
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!params.id || typeof params.id !== "string" || !/^[a-zA-Z0-9_-]+$/.test(params.id)) {
+      return NextResponse.json({ error: "Invalid invoice ID format" }, { status: 400 });
     }
 
     const invoice = await prisma.invoice.findUnique({

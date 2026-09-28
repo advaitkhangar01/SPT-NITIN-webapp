@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { sanitizeBusinessEmail } from "@/lib/company";
 
 export async function GET() {
   try {
@@ -19,7 +20,12 @@ export async function GET() {
       });
     }
 
-    return NextResponse.json({ settings });
+    const sanitizedSettings = {
+      ...settings,
+      email: sanitizeBusinessEmail(settings.email),
+    };
+
+    return NextResponse.json({ settings: sanitizedSettings });
   } catch (err: any) {
     return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 });
   }
@@ -71,7 +77,7 @@ export async function PUT(req: NextRequest) {
         tagline,
         gstNumber,
         phone,
-        email,
+        email: sanitizeBusinessEmail(email),
         address,
         logoPath,
         quotationPrefix,
@@ -94,7 +100,7 @@ export async function PUT(req: NextRequest) {
         tagline,
         gstNumber,
         phone,
-        email,
+        email: sanitizeBusinessEmail(email),
         address,
         logoPath: logoPath || "/logo.png",
         quotationPrefix: quotationPrefix || "QT-",

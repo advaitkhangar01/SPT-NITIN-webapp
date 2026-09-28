@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession, verifyPassword, hashPassword, createSessionToken, setSessionCookie } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,11 +10,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+    const rateLimitKey = `pwd_change_${session.userId}_${ip}`;
+    const limit = checkRateLimit(rateLimitKey, { windowMs: 15 * 60 * 1000, max: 10 });
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Too many password change attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(limit.resetInSec) } }
+      );
+    }
+
     const { currentPassword, newPassword } = await req.json();
 
-    if (!newPassword || newPassword.length < 6) {
+    if (!currentPassword) {
+      return NextResponse.json(
+        { error: "Current password is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!newPassword || typeof newPassword !== "string" || newPassword.length < 6) {
       return NextResponse.json(
         { error: "New password must be at least 6 characters" },
+        { status: 400 }
+      );
+    }
+
+    if (currentPassword === newPassword) {
+      return NextResponse.json(
+        { error: "New password must be different from your current password" },
         { status: 400 }
       );
     }
@@ -26,15 +51,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // If user is changing password, verify current password
-    if (currentPassword) {
-      const isValid = await verifyPassword(currentPassword, user.passwordHash);
-      if (!isValid) {
-        return NextResponse.json(
-          { error: "Incorrect current password" },
-          { status: 400 }
-        );
-      }
+    const isValid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!isValid) {
+      return NextResponse.json(
+        { error: "Incorrect current password" },
+        { status: 400 }
+      );
     }
 
     const newHash = await hashPassword(newPassword);

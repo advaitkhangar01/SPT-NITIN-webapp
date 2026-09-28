@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { validateQuotationPayload } from "@/lib/validations";
 
 export async function GET(
   req: NextRequest,
@@ -41,21 +42,6 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const {
-      date,
-      customerName,
-      proposedSystem,
-      connectionType,
-      systemCapacity,
-      estimatedGeneration,
-      validityDays,
-      totalAmount,
-      gstInclusive,
-      investmentNote,
-      items,
-    } = body;
-
     const existing = await prisma.quotation.findUnique({
       where: { id: params.id },
     });
@@ -63,6 +49,28 @@ export async function PUT(
     if (!existing) {
       return NextResponse.json({ error: "Quotation not found" }, { status: 404 });
     }
+
+    if (
+      session.role !== "ADMIN" &&
+      existing.createdBy !== session.name &&
+      existing.createdBy !== session.username
+    ) {
+      return NextResponse.json(
+        { error: "Forbidden: You can only update quotations created by you" },
+        { status: 403 }
+      );
+    }
+
+    const body = await req.json();
+    const validation = validateQuotationPayload(body);
+    if (!validation.success || !validation.data) {
+      return NextResponse.json(
+        { error: validation.error || "Invalid quotation data" },
+        { status: 400 }
+      );
+    }
+
+    const validData = validation.data;
 
     const updated = await prisma.$transaction(async (tx) => {
       // Delete old items and re-create
@@ -73,23 +81,23 @@ export async function PUT(
       const q = await tx.quotation.update({
         where: { id: params.id },
         data: {
-          date,
-          customerName,
-          proposedSystem,
-          connectionType,
-          systemCapacity: String(systemCapacity),
-          estimatedGeneration: String(estimatedGeneration),
-          validityDays: Number(validityDays),
-          totalAmount: Number(totalAmount),
-          gstInclusive: gstInclusive ?? true,
-          investmentNote,
+          date: validData.date,
+          customerName: validData.customerName,
+          proposedSystem: validData.proposedSystem,
+          connectionType: validData.connectionType,
+          systemCapacity: validData.systemCapacity,
+          estimatedGeneration: validData.estimatedGeneration,
+          validityDays: validData.validityDays,
+          totalAmount: validData.totalAmount,
+          gstInclusive: validData.gstInclusive,
+          investmentNote: validData.investmentNote,
           items: {
-            create: items.map((item: any, idx: number) => ({
-              sortOrder: idx,
+            create: validData.items.map((item) => ({
+              sortOrder: item.sortOrder,
               component: item.component,
-              specification: item.specification || "",
-              brandModel: item.brandModel || "",
-              quantity: item.quantity || "",
+              specification: item.specification,
+              brandModel: item.brandModel,
+              quantity: item.quantity,
             })),
           },
         },
@@ -118,17 +126,24 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const quotation = await prisma.quotation.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!quotation) {
+      return NextResponse.json({ error: "Quotation not found" }, { status: 404 });
+    }
+
     // Only Admin or creator can delete
-    if (session.role !== "ADMIN") {
-      const quotation = await prisma.quotation.findUnique({
-        where: { id: params.id },
-      });
-      if (quotation && quotation.createdBy !== session.name && quotation.createdBy !== session.username) {
-        return NextResponse.json(
-          { error: "Only admins can delete this quotation" },
-          { status: 403 }
-        );
-      }
+    if (
+      session.role !== "ADMIN" &&
+      quotation.createdBy !== session.name &&
+      quotation.createdBy !== session.username
+    ) {
+      return NextResponse.json(
+        { error: "Forbidden: Only admins or the creator can delete this quotation" },
+        { status: 403 }
+      );
     }
 
     await prisma.quotation.delete({
