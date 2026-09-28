@@ -37,8 +37,11 @@ async function main() {
         upiId: "",
       },
     });
-    console.log("Default CompanySettings seeded.");
-  } else if (existingSettings.email && existingSettings.email.includes(".com")) {
+  } else if (
+    !existingSettings.email ||
+    existingSettings.email.includes("gmail") ||
+    existingSettings.email !== "contact@shashikalapowertech.in"
+  ) {
     await prisma.companySettings.update({
       where: { id: "default" },
       data: { email: "contact@shashikalapowertech.in" },

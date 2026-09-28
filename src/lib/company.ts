@@ -19,7 +19,14 @@ export interface CompanySnapshot {
 }
 
 export function sanitizeBusinessEmail(email?: string | null): string {
-  if (!email || typeof email !== "string" || email.trim() === "" || email.toLowerCase().includes("@shashikalapowertech.com")) {
+  if (
+    !email ||
+    typeof email !== "string" ||
+    email.trim() === "" ||
+    email.toLowerCase().includes("gmail") ||
+    email.toLowerCase().includes("@shashikalapowertech.com") ||
+    email.toLowerCase().includes("shashikalapowertech")
+  ) {
     return "contact@shashikalapowertech.in";
   }
   return email.trim();
