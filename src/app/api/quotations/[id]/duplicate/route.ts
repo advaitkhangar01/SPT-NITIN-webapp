@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { allocateQuotationNumber } from "@/lib/numbering";
-import { getCompanySettingsSnapshot } from "@/lib/company";
+import { getCompanySettingsSnapshot, parseCompanySnapshot } from "@/lib/company";
 import { formatDateDMY } from "@/lib/formatters";
 
 export async function POST(
@@ -28,7 +28,18 @@ export async function POST(
       return NextResponse.json({ error: "Source quotation not found" }, { status: 404 });
     }
 
-    const companySnapshot = await getCompanySettingsSnapshot();
+    const currentSettings = await getCompanySettingsSnapshot();
+    const sourceSnapshot = parseCompanySnapshot(source.companySnapshot, currentSettings);
+    const companySnapshot = {
+      ...currentSettings,
+      showBankDetails: sourceSnapshot.showBankDetails !== false,
+      showDocumentsRequired: sourceSnapshot.showDocumentsRequired !== false,
+      bankName: sourceSnapshot.bankName || currentSettings.bankName,
+      accountNumber: sourceSnapshot.accountNumber || currentSettings.accountNumber,
+      ifscCode: sourceSnapshot.ifscCode || currentSettings.ifscCode,
+      branch: sourceSnapshot.branch || currentSettings.branch,
+      accountName: sourceSnapshot.accountName || currentSettings.accountName,
+    };
     const snapshotStr = JSON.stringify(companySnapshot);
 
     const duplicated = await prisma.$transaction(async (tx) => {

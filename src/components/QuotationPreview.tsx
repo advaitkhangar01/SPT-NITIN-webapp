@@ -17,6 +17,8 @@ import {
   AlertCircle,
   FileText,
   CheckCircle2,
+  Globe,
+  Landmark,
 } from "lucide-react";
 
 export interface QuotationItemData {
@@ -41,6 +43,12 @@ export interface QuotationData {
   gstInclusive: boolean;
   investmentNote?: string;
   showDocumentsRequired?: boolean;
+  showBankDetails?: boolean;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  branch?: string;
+  accountName?: string;
 }
 
 interface QuotationPreviewProps {
@@ -60,11 +68,18 @@ export default function QuotationPreview({
   const gst = company.gstNumber || "27AJRPN3091N1ZE";
   const phone = company.phone || "+91 95271 61595";
   const email = sanitizeBusinessEmail(company.email);
+  const website = company.website || "www.shashikalapowertech.in";
   const address =
     company.address ||
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";
   const logo = company.logoPath || "/logo.png";
   const showDocs = data.showDocumentsRequired ?? true;
+  const showBank = data.showBankDetails ?? true;
+  const bankName = data.bankName || company.bankName || "Maharashtra State Co-operative Bank";
+  const accountNumber = data.accountNumber || company.accountNumber || "0058107040000460";
+  const ifscCode = data.ifscCode || company.ifscCode || "MSCI0082056";
+  const branch = data.branch || company.branch || "Nagpur Branch";
+  const accountName = data.accountName || company.accountName || compName;
 
   return (
     <div
@@ -157,7 +172,7 @@ export default function QuotationPreview({
               <p className="text-[9px] text-slate-500 tracking-wide mt-0.5">
                 MNRE Empaneled Rooftop Solar EPC & Engineering Services
               </p>
-              <div className="flex items-center space-x-3 text-[8.5px] text-slate-600 mt-1 font-semibold">
+              <div className="flex items-center space-x-2.5 text-[8.5px] text-slate-600 mt-1 font-semibold flex-wrap">
                 <span className="flex items-center gap-1">
                   <Phone className="w-2.5 h-2.5 text-[#F37021]" />
                   <span>{phone}</span>
@@ -165,6 +180,10 @@ export default function QuotationPreview({
                 <span className="flex items-center gap-1 text-[#0F4C81]">
                   <Mail className="w-2.5 h-2.5 text-[#F37021]" />
                   <span>{email}</span>
+                </span>
+                <span className="flex items-center gap-1 text-slate-700">
+                  <Globe className="w-2.5 h-2.5 text-[#F37021]" />
+                  <span>{website}</span>
                 </span>
               </div>
             </div>
@@ -367,6 +386,41 @@ export default function QuotationPreview({
           </div>
         </div>
 
+        {/* Bank & Payment Details Section */}
+        {showBank && (
+          <div className="mt-2 border border-blue-200/90 rounded-md p-2 px-3 bg-gradient-to-r from-slate-50 to-blue-50/40 shadow-2xs">
+            <div className="flex items-center justify-between pb-1 mb-1.5 border-b border-slate-200">
+              <div className="flex items-center space-x-1.5">
+                <Landmark className="w-3.5 h-3.5 text-[#0F4C81]" />
+                <h3 className="font-black text-[10px] text-[#0F4C81] tracking-wider uppercase">
+                  BANK ACCOUNT DETAILS (FOR DIRECT TRANSFER / RTGS / NEFT)
+                </h3>
+              </div>
+              <span className="text-[8.5px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">
+                Beneficiary: {accountName}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-[9.5px]">
+              <div className="bg-white border border-slate-200/80 rounded px-2 py-1">
+                <span className="text-slate-500 font-semibold block text-[8px] uppercase">Bank Name</span>
+                <span className="font-bold text-slate-800 truncate block">{bankName}</span>
+              </div>
+              <div className="bg-white border border-slate-200/80 rounded px-2 py-1">
+                <span className="text-slate-500 font-semibold block text-[8px] uppercase">Account Number</span>
+                <span className="font-mono font-black text-slate-900 truncate block">{accountNumber}</span>
+              </div>
+              <div className="bg-white border border-slate-200/80 rounded px-2 py-1">
+                <span className="text-slate-500 font-semibold block text-[8px] uppercase">IFSC Code</span>
+                <span className="font-mono font-black text-slate-900 truncate block">{ifscCode}</span>
+              </div>
+              <div className="bg-white border border-slate-200/80 rounded px-2 py-1">
+                <span className="text-slate-500 font-semibold block text-[8px] uppercase">Branch Name</span>
+                <span className="font-bold text-slate-800 truncate block">{branch}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Documents Required for Solar Application Section */}
         {showDocs && (
           <div className="mt-2.5 border border-blue-200/90 rounded-md p-2.5 px-3 bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9] shadow-2xs">
@@ -471,6 +525,10 @@ export default function QuotationPreview({
             <div className="flex items-center space-x-1 font-medium text-slate-700">
               <Mail className="w-3.5 h-3.5 text-[#F37021] flex-shrink-0" />
               <span>{email}</span>
+            </div>
+            <div className="flex items-center space-x-1 font-medium text-[#0F4C81]">
+              <Globe className="w-3.5 h-3.5 text-[#F37021] flex-shrink-0" />
+              <span>{website}</span>
             </div>
           </div>
           <p className="text-[8.5px] text-slate-400 font-medium tracking-wider uppercase pt-0.5">

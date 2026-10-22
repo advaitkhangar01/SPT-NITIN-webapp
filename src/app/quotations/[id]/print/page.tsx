@@ -52,6 +52,13 @@ export default async function QuotationPrintPage({
           totalAmount: quotation.totalAmount,
           gstInclusive: quotation.gstInclusive,
           investmentNote: quotation.investmentNote,
+          showDocumentsRequired: company.showDocumentsRequired ?? true,
+          showBankDetails: company.showBankDetails ?? true,
+          bankName: company.bankName,
+          accountNumber: company.accountNumber,
+          ifscCode: company.ifscCode,
+          branch: company.branch,
+          accountName: company.accountName,
         }}
         company={company}
         scale={1}

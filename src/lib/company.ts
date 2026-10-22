@@ -7,6 +7,7 @@ export interface CompanySnapshot {
   gstNumber: string;
   phone: string;
   email: string;
+  website?: string;
   address: string;
   logoPath: string;
   accountName?: string;
@@ -16,6 +17,8 @@ export interface CompanySnapshot {
   branch?: string;
   upiId?: string;
   panNumber?: string;
+  showBankDetails?: boolean;
+  showDocumentsRequired?: boolean;
 }
 
 export function sanitizeBusinessEmail(email?: string | null): string {
@@ -51,6 +54,7 @@ export async function getCompanySettingsSnapshot(): Promise<CompanySnapshot> {
       gstNumber: settings.gstNumber,
       phone: settings.phone,
       email: sanitizeBusinessEmail(settings.email),
+      website: "www.shashikalapowertech.in",
       address: settings.address,
       logoPath: settings.logoPath || "/logo.png",
       accountName: settings.accountName || "SHASHIKALA POWER TECH",
@@ -83,8 +87,11 @@ export function parseCompanySnapshot(snapshotStr: string | null | undefined, fal
     gstNumber: "27AJRPN3091N1ZE",
     phone: "+91 95271 61595",
     email: "contact@shashikalapowertech.in",
+    website: "www.shashikalapowertech.in",
     address: "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034",
     logoPath: "/logo.png",
+    showBankDetails: true,
+    showDocumentsRequired: true,
     ...defaultBankData,
   };
 

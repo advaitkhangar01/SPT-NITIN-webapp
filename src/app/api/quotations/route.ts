@@ -58,8 +58,18 @@ export async function POST(req: NextRequest) {
 
     const validData = validation.data;
 
-    // Capture frozen snapshot of current company settings
-    const companySnapshot = await getCompanySettingsSnapshot();
+    // Capture frozen snapshot of current company settings with customizable bank info
+    const baseSnapshot = await getCompanySettingsSnapshot();
+    const companySnapshot = {
+      ...baseSnapshot,
+      showBankDetails: validData.showBankDetails !== false,
+      showDocumentsRequired: validData.showDocumentsRequired !== false,
+      bankName: validData.bankName || baseSnapshot.bankName,
+      accountNumber: validData.accountNumber || baseSnapshot.accountNumber,
+      ifscCode: validData.ifscCode || baseSnapshot.ifscCode,
+      branch: validData.branch || baseSnapshot.branch,
+      accountName: validData.accountName || baseSnapshot.accountName,
+    };
     const snapshotStr = JSON.stringify(companySnapshot);
 
     // Use Prisma transaction to atomically allocate number and save quotation

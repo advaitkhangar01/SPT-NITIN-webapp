@@ -179,6 +179,13 @@ export interface ValidatedQuotationInput {
   totalAmount: number;
   gstInclusive: boolean;
   investmentNote: string;
+  showDocumentsRequired?: boolean;
+  showBankDetails?: boolean;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  branch?: string;
+  accountName?: string;
   items: ValidatedQuotationItem[];
 }
 
@@ -249,6 +256,13 @@ export function validateQuotationPayload(body: any): ValidationResult<ValidatedQ
       investmentNote: typeof body.investmentNote === "string" && body.investmentNote.trim()
         ? body.investmentNote.trim()
         : "Includes all materials, transport, installation & net-metering support.",
+      showDocumentsRequired: body.showDocumentsRequired !== false,
+      showBankDetails: body.showBankDetails !== false,
+      bankName: typeof body.bankName === "string" ? body.bankName.trim() : undefined,
+      accountNumber: typeof body.accountNumber === "string" ? body.accountNumber.trim() : undefined,
+      ifscCode: typeof body.ifscCode === "string" ? body.ifscCode.trim().toUpperCase() : undefined,
+      branch: typeof body.branch === "string" ? body.branch.trim() : undefined,
+      accountName: typeof body.accountName === "string" ? body.accountName.trim() : undefined,
       items: validatedItems,
     },
   };

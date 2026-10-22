@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { validateQuotationPayload } from "@/lib/validations";
+import { parseCompanySnapshot } from "@/lib/company";
 
 export async function GET(
   req: NextRequest,
@@ -72,6 +73,19 @@ export async function PUT(
 
     const validData = validation.data;
 
+    const currentSnapshot = parseCompanySnapshot(existing.companySnapshot);
+    const updatedSnapshot = {
+      ...currentSnapshot,
+      showBankDetails: validData.showBankDetails !== false,
+      showDocumentsRequired: validData.showDocumentsRequired !== false,
+      bankName: validData.bankName || currentSnapshot.bankName,
+      accountNumber: validData.accountNumber || currentSnapshot.accountNumber,
+      ifscCode: validData.ifscCode || currentSnapshot.ifscCode,
+      branch: validData.branch || currentSnapshot.branch,
+      accountName: validData.accountName || currentSnapshot.accountName,
+    };
+    const snapshotStr = JSON.stringify(updatedSnapshot);
+
     const updated = await prisma.$transaction(async (tx) => {
       // Delete old items and re-create
       await tx.quotationItem.deleteMany({
@@ -91,6 +105,7 @@ export async function PUT(
           totalAmount: validData.totalAmount,
           gstInclusive: validData.gstInclusive,
           investmentNote: validData.investmentNote,
+          companySnapshot: snapshotStr,
           items: {
             create: validData.items.map((item) => ({
               sortOrder: item.sortOrder,

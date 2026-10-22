@@ -19,6 +19,8 @@ import {
   Maximize2,
   FileText,
   Eye,
+  Landmark,
+  RotateCcw,
 } from "lucide-react";
 
 interface QuotationEditorProps {
@@ -89,6 +91,24 @@ export default function QuotationEditor({
   const [showDocumentsRequired, setShowDocumentsRequired] = useState<boolean>(
     initialData?.showDocumentsRequired ?? true
   );
+  const [showBankDetails, setShowBankDetails] = useState<boolean>(
+    initialData?.showBankDetails ?? true
+  );
+  const [bankName, setBankName] = useState<string>(
+    initialData?.bankName || company.bankName || "Maharashtra State Co-operative Bank"
+  );
+  const [accountNumber, setAccountNumber] = useState<string>(
+    initialData?.accountNumber || company.accountNumber || "0058107040000460"
+  );
+  const [ifscCode, setIfscCode] = useState<string>(
+    initialData?.ifscCode || company.ifscCode || "MSCI0082056"
+  );
+  const [branch, setBranch] = useState<string>(
+    initialData?.branch || company.branch || "Nagpur Branch"
+  );
+  const [accountName, setAccountName] = useState<string>(
+    initialData?.accountName || company.accountName || "SHASHIKALA POWER TECH"
+  );
 
   // UI state
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -106,6 +126,15 @@ export default function QuotationEditor({
       setPreviewScale(0.42);
     }
   }, []);
+
+  // Reset bank details to company defaults
+  const handleResetBankDefaults = () => {
+    setBankName(company.bankName || "Maharashtra State Co-operative Bank");
+    setAccountNumber(company.accountNumber || "0058107040000460");
+    setIfscCode(company.ifscCode || "MSCI0082056");
+    setBranch(company.branch || "Nagpur Branch");
+    setAccountName(company.accountName || "SHASHIKALA POWER TECH");
+  };
 
   // Quick component adder
   const handleAddPreset = (presetIndex: number) => {
@@ -190,6 +219,13 @@ export default function QuotationEditor({
       totalAmount,
       gstInclusive,
       investmentNote: investmentNote.trim(),
+      showDocumentsRequired,
+      showBankDetails,
+      bankName: bankName.trim(),
+      accountNumber: accountNumber.trim(),
+      ifscCode: ifscCode.trim(),
+      branch: branch.trim(),
+      accountName: accountName.trim(),
     };
 
     try {
@@ -256,6 +292,12 @@ export default function QuotationEditor({
     gstInclusive,
     investmentNote,
     showDocumentsRequired,
+    showBankDetails,
+    bankName,
+    accountNumber,
+    ifscCode,
+    branch,
+    accountName,
   };
 
   return (
@@ -689,6 +731,129 @@ export default function QuotationEditor({
                 </span>
               </label>
             </div>
+          </div>
+
+          {/* Section E: Bank Account Details */}
+          <div className="space-y-3 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+              <div className="flex items-center space-x-1.5">
+                <Landmark className="w-4 h-4 text-[#0F4C81]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Bank Account Details
+                </h3>
+              </div>
+              {showBankDetails && (
+                <button
+                  type="button"
+                  onClick={handleResetBankDefaults}
+                  className="text-[11px] text-[#0F4C81] hover:underline flex items-center space-x-1 font-semibold"
+                  title="Reset to company defaults"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset Defaults</span>
+                </button>
+              )}
+            </div>
+
+            {/* Toggle show/hide on quotation */}
+            <div className="flex items-start space-x-2.5 bg-white p-2.5 rounded-md border border-slate-200">
+              <input
+                type="checkbox"
+                id="showBankDetails"
+                checked={showBankDetails}
+                onChange={(e) => setShowBankDetails(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#0F4C81] focus:ring-[#0F4C81] cursor-pointer"
+              />
+              <label
+                htmlFor="showBankDetails"
+                className="text-xs text-slate-700 font-medium cursor-pointer"
+              >
+                <span className="font-bold text-[#0F4C81] block">
+                  Show Bank Details on Quotation
+                </span>
+                <span className="text-[11px] text-slate-500 block leading-tight mt-0.5">
+                  Display bank name, account number, IFSC code, and branch for direct RTGS/NEFT payment.
+                </span>
+              </label>
+            </div>
+
+            {showBankDetails ? (
+              <div className="space-y-2.5 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                      Bank Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      placeholder="Maharashtra State Co-operative Bank"
+                      className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-semibold text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                      Account Number *
+                    </label>
+                    <input
+                      type="text"
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                      placeholder="0058107040000460"
+                      className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-mono font-bold text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                      IFSC Code *
+                    </label>
+                    <input
+                      type="text"
+                      value={ifscCode}
+                      onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
+                      placeholder="MSCI0082056"
+                      className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-mono font-bold uppercase text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                      Branch Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={branch}
+                      onChange={(e) => setBranch(e.target.value)}
+                      placeholder="Nagpur Branch"
+                      className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-semibold text-slate-800"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
+                    Beneficiary Name (Account Name)
+                  </label>
+                  <input
+                    type="text"
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    placeholder="SHASHIKALA POWER TECH"
+                    className="w-full text-xs px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none text-slate-700"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="p-2 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-800 flex items-center space-x-1.5">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                <span>Bank details are hidden on this quotation.</span>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
