@@ -305,10 +305,37 @@ export default function InvoiceEditor({
       );
 
       if (generatePdfAfter) {
-        window.open(`/api/invoices/${docId}/pdf`, "_blank");
-      }
+        setSavedSuccess(
+          `Invoice ${json.invoice.invoiceNumber} saved! Downloading PDF and navigating to history...`
+        );
 
-      if (!isEdit) {
+        try {
+          // Fetch PDF as blob in background and trigger direct browser file download
+          const pdfRes = await fetch(`/api/invoices/${docId}/pdf`);
+          if (pdfRes.ok && pdfRes.headers.get("content-type")?.includes("pdf")) {
+            const blob = await pdfRes.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const downloadLink = document.createElement("a");
+            downloadLink.href = blobUrl;
+            downloadLink.download = `Invoice-${json.invoice.invoiceNumber}.pdf`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 2000);
+          } else {
+            // Fallback to opening print preview relative to current site
+            window.open(`/invoices/${docId}/print?autoPrint=true`, "_blank");
+          }
+        } catch (pdfErr) {
+          console.error("PDF download error:", pdfErr);
+          window.open(`/invoices/${docId}/print?autoPrint=true`, "_blank");
+        }
+
+        // Navigate to Invoices History after download
+        setTimeout(() => {
+          router.push("/invoices");
+        }, 1500);
+      } else if (!isEdit) {
         setTimeout(() => {
           router.push(`/invoices/${docId}`);
         }, 1200);

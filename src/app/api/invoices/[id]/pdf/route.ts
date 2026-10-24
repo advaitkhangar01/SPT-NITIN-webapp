@@ -30,6 +30,9 @@ export async function GET(
     const baseUrl = process.env.INTERNAL_BASE_URL || `http://127.0.0.1:${internalPort}`;
     const printUrl = `${baseUrl}/invoices/${params.id}/print`;
 
+    const isPreview = req.nextUrl.searchParams.get("preview") === "true";
+    const disposition = isPreview ? "inline" : "attachment";
+
     try {
       const pdfBuffer = await generatePdfFromUrl(printUrl, sessionToken);
 
@@ -37,14 +40,18 @@ export async function GET(
         status: 200,
         headers: {
           "Content-Type": "application/pdf",
-          "Content-Disposition": `inline; filename="Invoice-${invoice.invoiceNumber}.pdf"`,
+          "Content-Disposition": `${disposition}; filename="Invoice-${invoice.invoiceNumber}.pdf"`,
           "Cache-Control": "no-cache, no-store, must-revalidate",
         },
       });
     } catch (pdfErr) {
       console.warn("Puppeteer generation fallback to print page:", pdfErr);
+      const forwardedHost = req.headers.get("x-forwarded-host");
+      const host = forwardedHost || req.headers.get("host") || req.nextUrl.host;
+      const proto = req.headers.get("x-forwarded-proto") || (forwardedHost ? "https" : req.nextUrl.protocol.replace(":", ""));
+      const publicBaseUrl = host ? `${proto}://${host}` : req.nextUrl.origin;
       return NextResponse.redirect(
-        new URL(`/invoices/${params.id}/print?autoPrint=true`, req.url)
+        new URL(`/invoices/${params.id}/print?autoPrint=true`, publicBaseUrl)
       );
     }
   } catch (err: any) {

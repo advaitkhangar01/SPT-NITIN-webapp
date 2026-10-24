@@ -46,9 +46,12 @@ export async function generatePdfFromUrl(url: string, sessionCookie?: string): P
 
       await page.emulateMediaType("print");
       await page.goto(url, {
-        waitUntil: ["load", "networkidle0"],
-        timeout: 25000,
+        waitUntil: "load",
+        timeout: 15000,
       });
+
+      // Brief settle delay to ensure all CSS styles & fonts are painted
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       const pdfBuffer = await page.pdf({
         format: "A4",

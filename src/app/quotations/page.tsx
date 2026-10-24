@@ -218,8 +218,7 @@ export default function QuotationsHistoryPage() {
 
                         <a
                           href={`/api/quotations/${q.id}/pdf`}
-                          target="_blank"
-                          rel="noreferrer"
+                          download={`Quotation-${q.quotationNumber}.pdf`}
                           title="Download PDF"
                           className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded"
                         >

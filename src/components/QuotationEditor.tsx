@@ -254,12 +254,37 @@ export default function QuotationEditor({
       );
 
       if (generatePdfAfter) {
-        // Open PDF download or trigger browser print
-        window.open(`/api/quotations/${docId}/pdf`, "_blank");
-      }
+        setSavedSuccess(
+          `Quotation ${json.quotation.quotationNumber} saved! Downloading PDF and navigating to history...`
+        );
 
-      // If it was a new creation, redirect to the document's edit/view page
-      if (!isEdit) {
+        try {
+          // Fetch PDF as blob in background and trigger direct browser file download
+          const pdfRes = await fetch(`/api/quotations/${docId}/pdf`);
+          if (pdfRes.ok && pdfRes.headers.get("content-type")?.includes("pdf")) {
+            const blob = await pdfRes.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const downloadLink = document.createElement("a");
+            downloadLink.href = blobUrl;
+            downloadLink.download = `Quotation-${json.quotation.quotationNumber}.pdf`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 2000);
+          } else {
+            // Fallback to opening print preview relative to current site
+            window.open(`/quotations/${docId}/print?autoPrint=true`, "_blank");
+          }
+        } catch (pdfErr) {
+          console.error("PDF download error:", pdfErr);
+          window.open(`/quotations/${docId}/print?autoPrint=true`, "_blank");
+        }
+
+        // Navigate to Quotations History after download
+        setTimeout(() => {
+          router.push("/quotations");
+        }, 1500);
+      } else if (!isEdit) {
         setTimeout(() => {
           router.push(`/quotations/${docId}`);
         }, 1200);
