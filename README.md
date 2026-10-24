@@ -67,3 +67,49 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 npm run build
 npm start
 ```
+
+---
+
+## 5. Safe VPS Deployment & Live Data Preservation
+
+The live production application stores office data (quotations, invoices, numbering counters) in an SQLite database at `prisma/dev.db`.
+
+To develop locally and push changes safely via Git without risking live office data:
+
+### 1. Database Safety Rules
+- `prisma/dev.db*` is strictly ignored by Git so local records will never overwrite the VPS database on `git push`.
+- Never run `git clean -fdx` on the VPS, as it removes untracked `.db` files.
+- Always perform non-destructive schema additions (e.g. nullable columns or columns with `@default(...)`).
+
+### 2. Automated Safe Deployment Script
+On your VPS, execute the included deployment script:
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+This script automatically:
+1. Creates a timestamped atomic backup of `prisma/dev.db` into `backups/`.
+2. Pulls code from `main`.
+3. Runs `npm install` and `prisma generate`.
+4. Safely applies schema updates (`prisma db push --skip-generate`).
+5. Builds Next.js.
+6. Ensures file permissions remain writable for SQLite WAL mode.
+7. Gracefully reloads PM2 (`pm2 reload ecosystem.config.cjs --update-env`).
+
+### 3. Chromium / Puppeteer on Linux VPS
+For automated PDF downloads on Ubuntu/Debian, install the required headless Chromium system libraries:
+```bash
+sudo apt-get update
+sudo apt-get install -y chromium-browser \
+  libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+  libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+  libgbm1 libpango-1.0-0 libcairo2 libasound2
+```
+If using the system package, add to your VPS `.env`:
+```env
+PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+```
+Or use the bundled Chromium:
+```bash
+npx puppeteer browsers install chrome
+```

@@ -26,8 +26,9 @@ export async function GET(
     }
 
     const sessionToken = req.cookies.get("spt_session")?.value;
-    const internalPort = process.env.PORT || "3000";
-    const printUrl = `http://127.0.0.1:${internalPort}/quotations/${params.id}/print`;
+    const internalPort = process.env.PORT || (req.nextUrl.port && req.nextUrl.port !== "80" && req.nextUrl.port !== "443" ? req.nextUrl.port : "3000");
+    const baseUrl = process.env.INTERNAL_BASE_URL || `http://127.0.0.1:${internalPort}`;
+    const printUrl = `${baseUrl}/quotations/${params.id}/print`;
 
     try {
       const pdfBuffer = await generatePdfFromUrl(printUrl, sessionToken);

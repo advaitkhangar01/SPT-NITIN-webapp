@@ -1,7 +1,15 @@
 node_modules
 .next
 dev.db*
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+prisma/*.db
+prisma/*.db-*
+backups/
 *.log
 .env
 .env*.local
+
 

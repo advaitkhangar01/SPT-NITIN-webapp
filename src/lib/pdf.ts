@@ -28,8 +28,6 @@ export async function generatePdfFromUrl(url: string, sessionCookie?: string): P
         "--disable-dev-shm-usage",
         "--disable-gpu",
         "--no-first-run",
-        "--no-zygote",
-        "--single-process",
       ],
     });
 
@@ -40,7 +38,7 @@ export async function generatePdfFromUrl(url: string, sessionCookie?: string): P
         await page.setCookie({
           name: "spt_session",
           value: sessionCookie,
-          domain: urlObj.hostname,
+          url: urlObj.origin,
           path: "/",
           httpOnly: true,
         });
