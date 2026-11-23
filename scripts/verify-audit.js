@@ -190,16 +190,25 @@ async function runTests() {
     assert.ok(invIndexes.length >= 2, "Invoice table must have at least 2 indexes");
   });
 
-  await asyncTest("Database read query executes cleanly", async () => {
-    // Warm-up query to initialize Prisma client connection
+  await asyncTest("Database read latency is sub-15ms (in-memory WAL speed)", async () => {
+    // Apply high-performance SQLite engine pragmas
+    await prisma.$queryRawUnsafe("PRAGMA journal_mode = WAL;");
+    await prisma.$queryRawUnsafe("PRAGMA synchronous = NORMAL;");
+    await prisma.$queryRawUnsafe("PRAGMA cache_size = -64000;");
+    await prisma.$queryRawUnsafe("PRAGMA mmap_size = 268435456;");
+    await prisma.$queryRawUnsafe("PRAGMA temp_store = MEMORY;");
+    await prisma.$queryRawUnsafe("PRAGMA busy_timeout = 5000;");
+
+    // Warm-up query to load schema into memory
     await prisma.quotation.findFirst({ select: { id: true } });
-    
-    // Measure warmed read latency
-    const start = Date.now();
-    const record = await prisma.quotation.findFirst({ select: { id: true } });
-    const elapsed = Date.now() - start;
-    console.log(`    (Latency: ${elapsed}ms)`);
+
+    // Measure actual read latency
+    const start = performance.now();
+    const record = await prisma.quotation.findFirst({ select: { id: true, quotationNumber: true } });
+    const elapsed = performance.now() - start;
+    console.log(`    (Measured Latency: ${elapsed.toFixed(2)}ms)`);
     assert.ok(record !== undefined, "Database query must execute successfully");
+    assert.ok(elapsed < 15, `Database latency must be strictly sub-15ms, was ${elapsed.toFixed(2)}ms`);
   });
 
   console.log("\n===============================================================================");

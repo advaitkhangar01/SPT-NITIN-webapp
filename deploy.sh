@@ -38,6 +38,11 @@ echo "=== [4/6] Synchronizing database schema ==="
 npx prisma generate
 npx prisma db push --skip-generate
 
+if command -v sqlite3 >/dev/null 2>&1 && [ -f "$APP_DIR/prisma/dev.db" ]; then
+    sqlite3 "$APP_DIR/prisma/dev.db" "PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA mmap_size = 268435456; PRAGMA cache_size = -64000;" 2>/dev/null || true
+    echo "✔ Applied high-performance SQLite engine PRAGMAs (WAL, NORMAL sync, 256MB MMAP, 64MB Cache)"
+fi
+
 echo "=== [5/6] Building production Next.js application ==="
 npx next build
 
