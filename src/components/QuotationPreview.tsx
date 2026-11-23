@@ -81,15 +81,17 @@ export default function QuotationPreview({
   const branch = data.branch || company.branch || "Nagpur Branch";
   const accountName = data.accountName || company.accountName || compName;
 
+  const itemCount = data.items?.length || 0;
+  const isDense = itemCount > 4;
+  const isSuperDense = itemCount > 6;
+
   return (
     <div
-      className="a4-document-container bg-white text-slate-800 shadow-2xl relative flex flex-col justify-between overflow-hidden"
+      className="a4-document-container bg-white text-slate-800 shadow-2xl relative flex flex-col justify-between print:shadow-none"
       style={{
         width: "210mm",
         minHeight: "297mm",
-        height: "297mm",
-        maxHeight: "297mm",
-        padding: "10mm 15mm 9mm 15mm",
+        padding: isSuperDense ? "7mm 12mm 7mm 12mm" : isDense ? "8mm 13mm 8mm 13mm" : "10mm 15mm 9mm 15mm",
         boxSizing: "border-box",
         transform: scale !== 1 ? `scale(${scale})` : undefined,
         transformOrigin: "top center",
@@ -215,10 +217,10 @@ export default function QuotationPreview({
         </div>
 
         {/* Information Cards (Two Columns with Icons) */}
-        <div className="grid grid-cols-2 gap-3.5 mb-2.5">
+        <div className={`grid grid-cols-2 gap-3.5 ${isDense ? "mb-1.5" : "mb-2.5"}`}>
           {/* Left Card: Customer Details */}
-          <div className="bg-[#F8FAFC] border-l-[3.5px] border-[#0F4C81] p-2.5 px-3 rounded-r-md text-[10.5px] leading-relaxed shadow-2xs border-y border-r border-slate-200/70">
-            <div className="flex items-center space-x-1.5 mb-1.5 pb-1 border-b border-slate-200">
+          <div className={`bg-[#F8FAFC] border-l-[3.5px] border-[#0F4C81] ${isDense ? "p-2 px-2.5" : "p-2.5 px-3"} rounded-r-md text-[10.5px] leading-relaxed shadow-2xs border-y border-r border-slate-200/70`}>
+            <div className={`flex items-center space-x-1.5 ${isDense ? "mb-1 pb-0.5" : "mb-1.5 pb-1"} border-b border-slate-200`}>
               <User className="w-3.5 h-3.5 text-[#0F4C81]" />
               <h3 className="font-extrabold text-[10.5px] text-[#0F4C81] tracking-wider uppercase">
                 CUSTOMER DETAILS
@@ -253,8 +255,8 @@ export default function QuotationPreview({
           </div>
 
           {/* Right Card: Project Summary */}
-          <div className="bg-[#F8FAFC] border-l-[3.5px] border-[#F37021] p-2.5 px-3 rounded-r-md text-[10.5px] leading-relaxed shadow-2xs border-y border-r border-slate-200/70">
-            <div className="flex items-center space-x-1.5 mb-1.5 pb-1 border-b border-slate-200">
+          <div className={`bg-[#F8FAFC] border-l-[3.5px] border-[#F37021] ${isDense ? "p-2 px-2.5" : "p-2.5 px-3"} rounded-r-md text-[10.5px] leading-relaxed shadow-2xs border-y border-r border-slate-200/70`}>
+            <div className={`flex items-center space-x-1.5 ${isDense ? "mb-1 pb-0.5" : "mb-1.5 pb-1"} border-b border-slate-200`}>
               <Gauge className="w-3.5 h-3.5 text-[#F37021]" />
               <h3 className="font-extrabold text-[10.5px] text-[#F37021] tracking-wider uppercase">
                 PROJECT SUMMARY
@@ -292,7 +294,7 @@ export default function QuotationPreview({
         </div>
 
         {/* Section Heading */}
-        <div className="mt-2.5 mb-1.5 flex items-center justify-between">
+        <div className={`${isDense ? "mt-1.5 mb-1" : "mt-2.5 mb-1.5"} flex items-center justify-between`}>
           <h2 className="text-[10.5px] font-black text-[#0F4C81] tracking-wider uppercase flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-[#F37021]" />
             <span>BILL OF MATERIALS & SYSTEM SPECIFICATIONS</span>
@@ -307,12 +309,12 @@ export default function QuotationPreview({
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="bg-gradient-to-r from-[#0F4C81] to-[#16568F] text-white text-[9.5px] uppercase font-bold tracking-wider">
-                <th className="py-1.5 px-2.5 text-center w-[6%] border-r border-blue-800">#</th>
-                <th className="py-1.5 px-3 w-[48%] border-r border-blue-800">
+                <th className={`${isDense ? "py-1 px-2" : "py-1.5 px-2.5"} text-center w-[6%] border-r border-blue-800`}>#</th>
+                <th className={`${isDense ? "py-1 px-2.5" : "py-1.5 px-3"} w-[48%] border-r border-blue-800`}>
                   COMPONENT & SPECIFICATIONS
                 </th>
-                <th className="py-1.5 px-3 w-[24%] border-r border-blue-800">BRAND / MODEL</th>
-                <th className="py-1.5 px-3 w-[22%]">QUANTITY</th>
+                <th className={`${isDense ? "py-1 px-2.5" : "py-1.5 px-3"} w-[24%] border-r border-blue-800`}>BRAND / MODEL</th>
+                <th className={`${isDense ? "py-1 px-2.5" : "py-1.5 px-3"} w-[22%]`}>QUANTITY</th>
               </tr>
             </thead>
             <tbody className="text-[10px] divide-y divide-slate-200">
@@ -322,25 +324,25 @@ export default function QuotationPreview({
                     key={idx}
                     className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/70"}
                   >
-                    <td className="py-1.5 px-2.5 text-center text-slate-700 font-bold align-top">
+                    <td className={`${isDense ? "py-1 px-2" : "py-1.5 px-2.5"} text-center text-slate-700 font-bold align-top`}>
                       <span className="inline-block w-4 h-4 rounded-full bg-slate-100 text-slate-700 text-[9px] leading-4 text-center">
                         {idx + 1}
                       </span>
                     </td>
-                    <td className="py-1.5 px-3 align-top">
-                      <div className="font-bold text-slate-800 text-[10.5px]">
+                    <td className={`${isDense ? "py-1 px-2.5" : "py-1.5 px-3"} align-top`}>
+                      <div className={`font-bold text-slate-800 ${isDense ? "text-[10px]" : "text-[10.5px]"}`}>
                         {item.component}
                       </div>
                       {item.specification && (
-                        <div className="text-slate-500 text-[9.5px] mt-0.5 leading-snug">
+                        <div className={`text-slate-500 ${isDense ? "text-[9px]" : "text-[9.5px]"} mt-0.5 leading-snug`}>
                           {item.specification}
                         </div>
                       )}
                     </td>
-                    <td className="py-1.5 px-3 text-slate-700 font-medium align-top">
+                    <td className={`${isDense ? "py-1 px-2.5" : "py-1.5 px-3"} text-slate-700 font-medium align-top`}>
                       {item.brandModel || "—"}
                     </td>
-                    <td className="py-1.5 px-3 text-slate-800 font-semibold align-top">
+                    <td className={`${isDense ? "py-1 px-2.5" : "py-1.5 px-3"} text-slate-800 font-semibold align-top`}>
                       {item.quantity || "—"}
                     </td>
                   </tr>
@@ -357,7 +359,7 @@ export default function QuotationPreview({
         </div>
 
         {/* Total Project Investment Section */}
-        <div className="mt-2.5 bg-gradient-to-r from-[#ECFDF5] to-[#E8F7EC] border-2 border-[#86EFAC] rounded-md p-2.5 px-4 flex items-center justify-between shadow-2xs">
+        <div className={`${isDense ? "mt-1.5 p-2 px-3" : "mt-2.5 p-2.5 px-4"} bg-gradient-to-r from-[#ECFDF5] to-[#E8F7EC] border-2 border-[#86EFAC] rounded-md flex items-center justify-between shadow-2xs`}>
           <div>
             <div className="flex items-center space-x-1.5">
               <CheckCircle2 className="w-4 h-4 text-[#15803D]" />
@@ -388,8 +390,8 @@ export default function QuotationPreview({
 
         {/* Bank & Payment Details Section */}
         {showBank && (
-          <div className="mt-2 border border-blue-200/90 rounded-md p-2 px-3 bg-gradient-to-r from-slate-50 to-blue-50/40 shadow-2xs">
-            <div className="flex items-center justify-between pb-1 mb-1.5 border-b border-slate-200">
+          <div className={`${isDense ? "mt-1.5 p-1.5 px-2.5" : "mt-2 p-2 px-3"} border border-blue-200/90 rounded-md bg-gradient-to-r from-slate-50 to-blue-50/40 shadow-2xs`}>
+            <div className="flex items-center justify-between pb-1 mb-1 border-b border-slate-200">
               <div className="flex items-center space-x-1.5">
                 <Landmark className="w-3.5 h-3.5 text-[#0F4C81]" />
                 <h3 className="font-black text-[10px] text-[#0F4C81] tracking-wider uppercase">
@@ -423,9 +425,9 @@ export default function QuotationPreview({
 
         {/* Documents Required for Solar Application Section */}
         {showDocs && (
-          <div className="mt-2.5 border border-blue-200/90 rounded-md p-2.5 px-3 bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9] shadow-2xs">
+          <div className={`${isDense ? "mt-1.5 p-2 px-2.5" : "mt-2.5 p-2.5 px-3"} border border-blue-200/90 rounded-md bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9] shadow-2xs`}>
             {/* Header with Title and Subsidy Tag */}
-            <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-200">
+            <div className="flex items-center justify-between pb-1 mb-1.5 border-b border-slate-200">
               <div className="flex items-center space-x-1.5">
                 <FileCheck className="w-4 h-4 text-[#0F4C81]" />
                 <h3 className="font-black text-[11px] text-[#0F4C81] tracking-wider uppercase">
@@ -438,9 +440,9 @@ export default function QuotationPreview({
             </div>
 
             {/* 6-Item Checklist Grid (2 Columns x 3 Rows) */}
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[10px]">
+            <div className={`grid grid-cols-2 gap-x-3 ${isDense ? "gap-y-1 text-[9.5px]" : "gap-y-1.5 text-[10px]"}`}>
               {/* Item 1 */}
-              <div className="flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 py-1 shadow-2xs">
+              <div className={`flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 ${isDense ? "py-0.5" : "py-1"} shadow-2xs`}>
                 <span className="w-4 h-4 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">
                   1
                 </span>
@@ -448,7 +450,7 @@ export default function QuotationPreview({
               </div>
 
               {/* Item 2 */}
-              <div className="flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 py-1 shadow-2xs">
+              <div className={`flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 ${isDense ? "py-0.5" : "py-1"} shadow-2xs`}>
                 <span className="w-4 h-4 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">
                   2
                 </span>
@@ -456,7 +458,7 @@ export default function QuotationPreview({
               </div>
 
               {/* Item 3 */}
-              <div className="flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 py-1 shadow-2xs">
+              <div className={`flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 ${isDense ? "py-0.5" : "py-1"} shadow-2xs`}>
                 <span className="w-4 h-4 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">
                   3
                 </span>
@@ -464,7 +466,7 @@ export default function QuotationPreview({
               </div>
 
               {/* Item 4 */}
-              <div className="flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 py-1 shadow-2xs">
+              <div className={`flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 ${isDense ? "py-0.5" : "py-1"} shadow-2xs`}>
                 <span className="w-4 h-4 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">
                   4
                 </span>
@@ -472,7 +474,7 @@ export default function QuotationPreview({
               </div>
 
               {/* Item 5 */}
-              <div className="flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 py-1 shadow-2xs">
+              <div className={`flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 ${isDense ? "py-0.5" : "py-1"} shadow-2xs`}>
                 <span className="w-4 h-4 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">
                   5
                 </span>
@@ -485,7 +487,7 @@ export default function QuotationPreview({
               </div>
 
               {/* Item 6 */}
-              <div className="flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 py-1 shadow-2xs">
+              <div className={`flex items-center space-x-2 bg-white/90 border border-slate-200 rounded px-2 ${isDense ? "py-0.5" : "py-1"} shadow-2xs`}>
                 <span className="w-4 h-4 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">
                   6
                 </span>
@@ -499,7 +501,7 @@ export default function QuotationPreview({
             </div>
 
             {/* Red Note Alert Callout */}
-            <div className="mt-2 bg-amber-50/90 border border-amber-300/80 rounded px-2.5 py-1 flex items-center space-x-1.5 text-[10px]">
+            <div className={`mt-1.5 bg-amber-50/90 border border-amber-300/80 rounded px-2.5 py-1 flex items-center space-x-1.5 text-[9.5px]`}>
               <AlertCircle className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
               <p className="text-slate-700 font-medium">
                 <span className="font-black text-rose-600 uppercase">Note:</span> Load
@@ -511,7 +513,7 @@ export default function QuotationPreview({
       </div>
 
       {/* Footer Section */}
-      <div className="pt-3 border-t-2 border-slate-200 text-center">
+      <div className={`${isDense ? "pt-2" : "pt-3"} border-t-2 border-slate-200 text-center`}>
         <div className="flex flex-col items-center justify-center space-y-1 text-[10px] text-slate-700">
           <div className="flex items-center justify-center space-x-1.5 font-medium">
             <MapPin className="w-3.5 h-3.5 text-[#F37021] flex-shrink-0" />

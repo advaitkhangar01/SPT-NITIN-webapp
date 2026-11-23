@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatIndianCurrency } from "@/lib/formatters";
+import { downloadPdfBlob } from "@/lib/download";
 import {
   FileText,
   Search,
@@ -11,6 +12,7 @@ import {
   Copy,
   Receipt,
   FileDown,
+  Printer,
   Trash2,
   ExternalLink,
   Loader2,
@@ -34,7 +36,20 @@ export default function QuotationsHistoryPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  const handleDownloadPdf = async (q: QuotationSummary) => {
+    if (downloadingId) return;
+    try {
+      setDownloadingId(q.id);
+      await downloadPdfBlob(`/api/quotations/${q.id}/pdf`, `Quotation-${q.quotationNumber}.pdf`);
+    } catch (err: any) {
+      alert(err.message || "Failed to download PDF. Please try again.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const fetchQuotations = async (query = "") => {
     try {
@@ -216,14 +231,27 @@ export default function QuotationsHistoryPage() {
                           <ExternalLink className="w-4 h-4" />
                         </Link>
 
-                        <a
-                          href={`/api/quotations/${q.id}/pdf`}
-                          download={`Quotation-${q.quotationNumber}.pdf`}
-                          title="Download PDF"
-                          className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded"
+                        <Link
+                          href={`/quotations/${q.id}/print`}
+                          title="Instant Print / PDF Preview"
+                          className="p-1.5 text-slate-600 hover:text-[#0F4C81] hover:bg-slate-100 rounded"
                         >
-                          <FileDown className="w-4 h-4" />
-                        </a>
+                          <Printer className="w-4 h-4" />
+                        </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadPdf(q)}
+                          disabled={downloadingId === q.id}
+                          title="Download PDF"
+                          className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded disabled:opacity-50"
+                        >
+                          {downloadingId === q.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
+                          ) : (
+                            <FileDown className="w-4 h-4" />
+                          )}
+                        </button>
 
                         <button
                           type="button"

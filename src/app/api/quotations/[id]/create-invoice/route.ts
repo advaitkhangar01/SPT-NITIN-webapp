@@ -48,6 +48,7 @@ export async function POST(
     const invoiceItems = [
       {
         description: `Solar PV System Installation (${quotation.systemCapacity || "3.00"} kW ${quotation.proposedSystem || "Rooftop Solar"})`,
+        hsn: "8541",
         quantity: 1,
         rate: subtotal,
         gstRate: gstRate,
@@ -82,6 +83,7 @@ export async function POST(
             create: invoiceItems.map((it, idx) => ({
               sortOrder: idx,
               description: it.description,
+              hsn: it.hsn || null,
               quantity: it.quantity,
               rate: it.rate,
               gstRate: it.gstRate,

@@ -2,6 +2,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 import QuotationPreview from "@/components/QuotationPreview";
 import AutoPrintTrigger from "@/components/AutoPrintTrigger";
+import PrintToolbar from "@/components/PrintToolbar";
 import { prisma } from "@/lib/prisma";
 import { parseCompanySnapshot, getCompanySettingsSnapshot } from "@/lib/company";
 
@@ -31,8 +32,15 @@ export default async function QuotationPrintPage({
   const company = parseCompanySnapshot(quotation.companySnapshot, fallbackCompany);
 
   return (
-    <div className="bg-white min-h-screen flex flex-col items-center p-0 m-0 print:p-0">
-      <QuotationPreview
+    <div className="bg-slate-100 min-h-screen flex flex-col items-center p-0 m-0 print:p-0 print:bg-white">
+      <PrintToolbar
+        documentTitle={`Quotation #${quotation.quotationNumber} — ${quotation.customerName || "Customer"}`}
+        backHref={`/quotations/${quotation.id}`}
+        pdfDownloadHref={`/api/quotations/${quotation.id}/pdf`}
+      />
+
+      <div className="py-0 sm:py-6 print:py-0 w-full flex justify-center">
+        <QuotationPreview
         data={{
           quotationNumber: quotation.quotationNumber,
           date: quotation.date,
@@ -63,6 +71,7 @@ export default async function QuotationPrintPage({
         company={company}
         scale={1}
       />
+      </div>
 
       {searchParams?.autoPrint === "true" && <AutoPrintTrigger />}
     </div>

@@ -7,6 +7,7 @@ export interface ValidationResult<T> {
 export interface ValidatedInvoiceItem {
   sortOrder: number;
   description: string;
+  hsn?: string;
   quantity: number;
   rate: number;
   gstRate: number;
@@ -100,11 +101,14 @@ export function validateInvoicePayload(body: any): ValidationResult<ValidatedInv
       ? Math.round(rawAmount * 100) / 100
       : Math.round(quantity * rate * 100) / 100;
 
+    const hsn = typeof it.hsn === "string" ? it.hsn.trim() : undefined;
+
     calculatedSubtotal += amount;
 
     validatedItems.push({
       sortOrder: i,
       description,
+      hsn: hsn || undefined,
       quantity,
       rate,
       gstRate,

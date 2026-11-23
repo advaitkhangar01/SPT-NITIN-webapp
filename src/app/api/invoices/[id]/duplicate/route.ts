@@ -59,6 +59,7 @@ export async function POST(
             create: source.items.map((item, idx) => ({
               sortOrder: idx,
               description: item.description,
+              hsn: item.hsn || null,
               quantity: item.quantity,
               rate: item.rate,
               gstRate: item.gstRate,

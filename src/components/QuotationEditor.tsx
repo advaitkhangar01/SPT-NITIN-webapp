@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import QuotationPreview, { QuotationData, QuotationItemData } from "./QuotationPreview";
 import { CompanySnapshot } from "@/lib/company";
+import { downloadPdfBlob } from "@/lib/download";
 import { PREDEFINED_COMPONENTS, PROPOSED_SYSTEM_OPTIONS, CONNECTION_TYPE_OPTIONS } from "@/lib/presets";
 import { formatDateDMY, formatIndianCurrency, parseCurrencyInput } from "@/lib/formatters";
 import {
@@ -259,24 +260,12 @@ export default function QuotationEditor({
         );
 
         try {
-          // Fetch PDF as blob in background and trigger direct browser file download
-          const pdfRes = await fetch(`/api/quotations/${docId}/pdf`);
-          if (pdfRes.ok && pdfRes.headers.get("content-type")?.includes("pdf")) {
-            const blob = await pdfRes.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const downloadLink = document.createElement("a");
-            downloadLink.href = blobUrl;
-            downloadLink.download = `Quotation-${json.quotation.quotationNumber}.pdf`;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            downloadLink.remove();
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 2000);
-          } else {
-            // Fallback to opening print preview relative to current site
-            window.open(`/quotations/${docId}/print?autoPrint=true`, "_blank");
-          }
+          await downloadPdfBlob(
+            `/api/quotations/${docId}/pdf`,
+            `Quotation-${json.quotation.quotationNumber}.pdf`
+          );
         } catch (pdfErr) {
-          console.error("PDF download error:", pdfErr);
+          console.error("PDF download error, falling back to print page:", pdfErr);
           window.open(`/quotations/${docId}/print?autoPrint=true`, "_blank");
         }
 

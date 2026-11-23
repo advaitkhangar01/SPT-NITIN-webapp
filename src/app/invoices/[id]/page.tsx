@@ -50,6 +50,7 @@ export default async function InvoiceDetailPage({
         items: invoice.items.map((it) => ({
           id: it.id,
           description: it.description,
+          hsn: it.hsn || "",
           quantity: it.quantity,
           rate: it.rate,
           gstRate: it.gstRate,

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import InvoicePreview, { InvoiceData, InvoiceItemData } from "./InvoicePreview";
 import { CompanySnapshot } from "@/lib/company";
+import { downloadPdfBlob } from "@/lib/download";
 import { PAYMENT_STATUS_OPTIONS, PAYMENT_METHOD_OPTIONS } from "@/lib/presets";
 import { formatDateDMY, formatIndianCurrency, parseCurrencyInput } from "@/lib/formatters";
 import {
@@ -71,10 +72,12 @@ export default function InvoiceEditor({
       ? initialData.items.map((it) => ({
           ...it,
           per: it.per || "Set",
+          hsn: it.hsn || "",
         }))
       : [
           {
             description: "Solar PV System Installation (3.0 kW Rooftop Solar)",
+            hsn: "8541",
             quantity: 1,
             rate: 177966,
             gstRate: 18,
@@ -220,6 +223,7 @@ export default function InvoiceEditor({
       ...prev,
       {
         description: "",
+        hsn: "",
         quantity: 1,
         rate: 0,
         gstRate: 18,
@@ -310,24 +314,12 @@ export default function InvoiceEditor({
         );
 
         try {
-          // Fetch PDF as blob in background and trigger direct browser file download
-          const pdfRes = await fetch(`/api/invoices/${docId}/pdf`);
-          if (pdfRes.ok && pdfRes.headers.get("content-type")?.includes("pdf")) {
-            const blob = await pdfRes.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const downloadLink = document.createElement("a");
-            downloadLink.href = blobUrl;
-            downloadLink.download = `Invoice-${json.invoice.invoiceNumber}.pdf`;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            downloadLink.remove();
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 2000);
-          } else {
-            // Fallback to opening print preview relative to current site
-            window.open(`/invoices/${docId}/print?autoPrint=true`, "_blank");
-          }
+          await downloadPdfBlob(
+            `/api/invoices/${docId}/pdf`,
+            `Invoice-${json.invoice.invoiceNumber}.pdf`
+          );
         } catch (pdfErr) {
-          console.error("PDF download error:", pdfErr);
+          console.error("PDF download error, falling back to print page:", pdfErr);
           window.open(`/invoices/${docId}/print?autoPrint=true`, "_blank");
         }
 
@@ -601,16 +593,29 @@ export default function InvoiceEditor({
                   </div>
 
                   <div className="space-y-2">
-                    <div>
-                      <input
-                        type="text"
-                        value={item.description}
-                        onChange={(e) =>
-                          handleItemChange(idx, "description", e.target.value)
-                        }
-                        placeholder="Item Description (e.g. Solar PV System Installation)"
-                        className="w-full text-xs font-medium px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                      <div className="sm:col-span-3">
+                        <input
+                          type="text"
+                          value={item.description}
+                          onChange={(e) =>
+                            handleItemChange(idx, "description", e.target.value)
+                          }
+                          placeholder="Item Description (e.g. Solar PV System Installation)"
+                          className="w-full text-xs font-medium px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none"
+                        />
+                      </div>
+                      <div className="sm:col-span-1">
+                        <input
+                          type="text"
+                          value={item.hsn || ""}
+                          onChange={(e) =>
+                            handleItemChange(idx, "hsn", e.target.value)
+                          }
+                          placeholder="HSN (e.g. 8541)"
+                          className="w-full text-xs font-medium px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none"
+                        />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-2.5">

@@ -74,13 +74,17 @@ export default function InvoicePreview({
       : 18;
   const halfGstPercent = (effectiveGstPercent / 2).toFixed(1).replace(/\.0$/, "");
 
+  const itemCount = data.items?.length || 0;
+  const isDense = itemCount > 4;
+  const isSuperDense = itemCount > 7;
+
   return (
     <div
-      className="a4-document-container bg-white text-[#1A1A1A] shadow-2xl relative"
+      className="a4-document-container bg-white text-[#1A1A1A] shadow-2xl relative print:shadow-none"
       style={{
         width: "210mm",
         minHeight: "297mm",
-        padding: "12mm 14mm",
+        padding: isSuperDense ? "8mm 12mm" : isDense ? "10mm 13mm" : "12mm 14mm",
         boxSizing: "border-box",
         transform: scale !== 1 ? `scale(${scale})` : undefined,
         transformOrigin: "top center",
@@ -238,6 +242,7 @@ export default function InvoicePreview({
             <tr className="bg-gray-100 border-b border-black text-[7.5px] font-black uppercase tracking-wider text-center">
               <th className="py-1.5 border-r border-black w-8">Sr. NO</th>
               <th className="py-1.5 border-r border-black text-left px-2">DESCRIPTION OF GOODS / SERVICES</th>
+              <th className="py-1.5 border-r border-black w-16">HSN</th>
               <th className="py-1.5 border-r border-black w-14">Quantity</th>
               <th className="py-1.5 border-r border-black w-20">Rate</th>
               <th className="py-1.5 border-r border-black w-12">per</th>
@@ -254,22 +259,25 @@ export default function InvoicePreview({
 
                 return (
                   <tr key={idx} className="border-b border-gray-100 align-top">
-                    <td className="py-2 text-center border-r border-black text-gray-500 font-normal">
+                    <td className={`${isDense ? "py-1" : "py-2"} text-center border-r border-black text-gray-500 font-normal`}>
                       {idx + 1}
                     </td>
-                    <td className="py-2 px-2 border-r border-black text-gray-900 leading-snug text-left">
+                    <td className={`${isDense ? "py-1" : "py-2"} px-2 border-r border-black text-gray-900 leading-snug text-left`}>
                       <div className="font-bold text-[9px]">{item.description}</div>
                     </td>
-                    <td className="py-2 text-center border-r border-black text-gray-700">
+                    <td className={`${isDense ? "py-1" : "py-2"} text-center border-r border-black text-gray-700 font-mono text-[8.5px]`}>
+                      {item.hsn || "—"}
+                    </td>
+                    <td className={`${isDense ? "py-1" : "py-2"} text-center border-r border-black text-gray-700`}>
                       {qty}
                     </td>
-                    <td className="py-2 text-center border-r border-black text-gray-700 font-mono">
+                    <td className={`${isDense ? "py-1" : "py-2"} text-center border-r border-black text-gray-700 font-mono`}>
                       {formatIndianCurrency(rate)}
                     </td>
-                    <td className="py-2 text-center border-r border-black text-gray-600 font-medium italic">
+                    <td className={`${isDense ? "py-1" : "py-2"} text-center border-r border-black text-gray-600 font-medium italic`}>
                       {item.per || "Set"}
                     </td>
-                    <td className="py-2 px-2 text-right text-gray-900 font-mono font-bold">
+                    <td className={`${isDense ? "py-1" : "py-2"} px-2 text-right text-gray-900 font-mono font-bold`}>
                       {formatIndianCurrency(lineTaxable)}
                     </td>
                   </tr>
@@ -277,7 +285,7 @@ export default function InvoicePreview({
               })
             ) : (
               <tr>
-                <td colSpan={6} className="py-4 text-center text-gray-400">
+                <td colSpan={7} className="py-4 text-center text-gray-400">
                   No items added.
                 </td>
               </tr>
@@ -285,7 +293,7 @@ export default function InvoicePreview({
 
             {/* Subtotal, CGST, SGST, Discount, and Total Rows */}
             <tr className="border-t border-black bg-gray-50/50">
-              <td className="py-1 border-r border-black" colSpan={4}></td>
+              <td className="py-1 border-r border-black" colSpan={5}></td>
               <td className="py-1 border-r border-black text-center font-black uppercase text-[7px]">
                 SUB TOTAL
               </td>
@@ -294,7 +302,7 @@ export default function InvoicePreview({
               </td>
             </tr>
             <tr className="border-b border-gray-200">
-              <td className="py-1 border-r border-black" colSpan={4}></td>
+              <td className="py-1 border-r border-black" colSpan={5}></td>
               <td className="py-1 border-r border-black text-center font-black uppercase text-[7px]">
                 CGST @ {halfGstPercent}%
               </td>
@@ -303,7 +311,7 @@ export default function InvoicePreview({
               </td>
             </tr>
             <tr className="border-b border-black">
-              <td className="py-1 border-r border-black" colSpan={4}></td>
+              <td className="py-1 border-r border-black" colSpan={5}></td>
               <td className="py-1 border-r border-black text-center font-black uppercase text-[7px]">
                 SGST @ {halfGstPercent}%
               </td>
@@ -313,7 +321,7 @@ export default function InvoicePreview({
             </tr>
             {discount > 0 && (
               <tr className="border-b border-black text-emerald-700">
-                <td className="py-1 border-r border-black" colSpan={4}></td>
+                <td className="py-1 border-r border-black" colSpan={5}></td>
                 <td className="py-1 border-r border-black text-center font-black uppercase text-[7px]">
                   DISCOUNT
                 </td>
@@ -323,7 +331,7 @@ export default function InvoicePreview({
               </tr>
             )}
             <tr className="bg-gray-100 font-black border-b border-black">
-              <td className="py-1.5 px-2 uppercase text-[7.5px] tracking-wider" colSpan={4}>
+              <td className="py-1.5 px-2 uppercase text-[7.5px] tracking-wider" colSpan={5}>
                 TOTAL
               </td>
               <td className="py-1.5 border-r border-black text-center text-[7.5px]">Rupees</td>
@@ -334,7 +342,7 @@ export default function InvoicePreview({
             {amountPaid > 0 && (
               <>
                 <tr className="border-b border-gray-200 text-slate-700">
-                  <td className="py-1 border-r border-black" colSpan={4}></td>
+                  <td className="py-1 border-r border-black" colSpan={5}></td>
                   <td className="py-1 border-r border-black text-center font-bold uppercase text-[7px]">
                     AMOUNT PAID
                   </td>
@@ -343,7 +351,7 @@ export default function InvoicePreview({
                   </td>
                 </tr>
                 <tr className="border-b border-black bg-amber-50/60 font-black">
-                  <td className="py-1 border-r border-black" colSpan={4}></td>
+                  <td className="py-1 border-r border-black" colSpan={5}></td>
                   <td className="py-1 border-r border-black text-center font-black uppercase text-[7px] text-amber-900">
                     BALANCE DUE
                   </td>
@@ -420,100 +428,102 @@ export default function InvoicePreview({
           </tbody>
         </table>
 
-        {/* Total Amount in Words Banner */}
-        <div className="w-full bg-[#0F4C81] text-white px-2.5 py-1 text-[7.5px] font-black uppercase tracking-wider border border-black border-t-0 flex items-center justify-between">
-          <span>Total Amount (in words):</span>
-          <span className="font-extrabold">{convertNumberToWords(totalAmount)}</span>
-        </div>
+        {/* Total Amount in Words Banner, Accounts Details & Legal Declaration, Authorized Signatory */}
+        <div className="page-break-avoid">
+          <div className="w-full bg-[#0F4C81] text-white px-2.5 py-1 text-[7.5px] font-black uppercase tracking-wider border border-black border-t-0 flex items-center justify-between">
+            <span>Total Amount (in words):</span>
+            <span className="font-extrabold">{convertNumberToWords(totalAmount)}</span>
+          </div>
 
-        {/* Accounts Details & Legal Declaration */}
-        <table
-          className="w-full table-fixed border border-black border-t-0 text-[8.5px]"
-          style={{ borderCollapse: "collapse" }}
-        >
-          <tbody>
-            <tr>
-              <td className="w-1/2 border-r border-black p-2 align-top leading-tight font-bold">
-                <div className="text-[8px] font-black uppercase tracking-wider mb-1 border-b border-gray-300 pb-0.5 text-gray-900">
-                  ACCOUNT DETAILS
-                </div>
-                <div className="space-y-0.5 text-gray-800">
-                  <p className="flex justify-between">
-                    <span className="text-gray-500 font-bold">a. Company Name:</span>
-                    <span className="font-black text-gray-900">{company.accountName || compName}</span>
-                  </p>
-                  <p className="flex justify-between">
-                    <span className="text-gray-500 font-bold">b. Account Number:</span>
-                    <span className="font-mono font-black text-gray-900">
-                      {company.accountNumber || "0058107040000460"}
-                    </span>
-                  </p>
-                  <p className="flex justify-between">
-                    <span className="text-gray-500 font-bold">c. IFSC Code:</span>
-                    <span className="font-mono font-black text-gray-900">
-                      {company.ifscCode || "MSCI0082056"}
-                    </span>
-                  </p>
-                  <p className="flex justify-between">
-                    <span className="text-gray-500 font-bold">d. Bank & Branch:</span>
-                    <span className="font-bold text-gray-900">
-                      {company.bankName || "Maharashtra State Co-operative Bank"}
-                      {company.branch ? `, ${company.branch}` : ""}
-                    </span>
-                  </p>
-                  {company.upiId ? (
-                    <>
+          {/* Accounts Details & Legal Declaration */}
+          <table
+            className="w-full table-fixed border border-black border-t-0 text-[8.5px]"
+            style={{ borderCollapse: "collapse" }}
+          >
+            <tbody>
+              <tr>
+                <td className="w-1/2 border-r border-black p-2 align-top leading-tight font-bold">
+                  <div className="text-[8px] font-black uppercase tracking-wider mb-1 border-b border-gray-300 pb-0.5 text-gray-900">
+                    ACCOUNT DETAILS
+                  </div>
+                  <div className="space-y-0.5 text-gray-800">
+                    <p className="flex justify-between">
+                      <span className="text-gray-500 font-bold">a. Company Name:</span>
+                      <span className="font-black text-gray-900">{company.accountName || compName}</span>
+                    </p>
+                    <p className="flex justify-between">
+                      <span className="text-gray-500 font-bold">b. Account Number:</span>
+                      <span className="font-mono font-black text-gray-900">
+                        {company.accountNumber || "0058107040000460"}
+                      </span>
+                    </p>
+                    <p className="flex justify-between">
+                      <span className="text-gray-500 font-bold">c. IFSC Code:</span>
+                      <span className="font-mono font-black text-gray-900">
+                        {company.ifscCode || "MSCI0082056"}
+                      </span>
+                    </p>
+                    <p className="flex justify-between">
+                      <span className="text-gray-500 font-bold">d. Bank & Branch:</span>
+                      <span className="font-bold text-gray-900">
+                        {company.bankName || "Maharashtra State Co-operative Bank"}
+                        {company.branch ? `, ${company.branch}` : ""}
+                      </span>
+                    </p>
+                    {company.upiId ? (
+                      <>
+                        <p className="flex justify-between">
+                          <span className="text-gray-500 font-bold">e. UPI / VPA:</span>
+                          <span className="font-mono font-black text-[#0F4C81]">{company.upiId}</span>
+                        </p>
+                        <p className="flex justify-between">
+                          <span className="text-gray-500 font-bold">f. GSTIN:</span>
+                          <span className="font-mono font-black">{gst}</span>
+                        </p>
+                      </>
+                    ) : (
                       <p className="flex justify-between">
-                        <span className="text-gray-500 font-bold">e. UPI / VPA:</span>
-                        <span className="font-mono font-black text-[#0F4C81]">{company.upiId}</span>
-                      </p>
-                      <p className="flex justify-between">
-                        <span className="text-gray-500 font-bold">f. GSTIN:</span>
+                        <span className="text-gray-500 font-bold">e. GSTIN:</span>
                         <span className="font-mono font-black">{gst}</span>
                       </p>
-                    </>
-                  ) : (
-                    <p className="flex justify-between">
-                      <span className="text-gray-500 font-bold">e. GSTIN:</span>
-                      <span className="font-mono font-black">{gst}</span>
-                    </p>
-                  )}
-                </div>
-              </td>
-              <td className="w-1/2 p-2 align-top leading-tight font-bold flex flex-col justify-between h-full">
-                <div>
-                  <p className="text-[7.5px] text-gray-600 leading-normal italic font-medium pt-1">
-                    We declare that this invoice shows the actual price of the goods / services described and that all particulars are true and correct.
-                  </p>
-                </div>
-                {data.notes && (
-                  <div className="text-[7.5px] text-slate-700 mt-1 pt-1 border-t border-gray-200">
-                    <span className="font-bold text-gray-800">Remarks: </span>
-                    {data.notes}
+                    )}
                   </div>
-                )}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td className="w-1/2 p-2 align-top leading-tight font-bold flex flex-col justify-between h-full">
+                  <div>
+                    <p className="text-[7.5px] text-gray-600 leading-normal italic font-medium pt-1">
+                      We declare that this invoice shows the actual price of the goods / services described and that all particulars are true and correct.
+                    </p>
+                  </div>
+                  {data.notes && (
+                    <div className="text-[7.5px] text-slate-700 mt-1 pt-1 border-t border-gray-200">
+                      <span className="font-bold text-gray-800">Remarks: </span>
+                      {data.notes}
+                    </div>
+                  )}
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-        {/* Authorized Signatory Block */}
-      <div className="w-full border border-black border-t-0 p-2.5 flex justify-between items-center text-[9px] font-bold">
-        <div className="text-left font-bold space-y-0.5">
-          <p className="text-gray-500 font-black uppercase tracking-wider text-[6.5px]">
-            Authorized Signatory
-          </p>
-          <p className="font-black text-[10px] uppercase text-[#0F4C81]">
-            {compName}
-          </p>
-          <p className="font-black text-gray-700 pt-4 border-t border-dashed border-gray-400 w-36 mt-3 text-[8px]">
-            Authorized Signature
-          </p>
+          {/* Authorized Signatory Block */}
+          <div className="w-full border border-black border-t-0 p-2.5 flex justify-between items-center text-[9px] font-bold">
+            <div className="text-left font-bold space-y-0.5">
+              <p className="text-gray-500 font-black uppercase tracking-wider text-[6.5px]">
+                Authorized Signatory
+              </p>
+              <p className="font-black text-[10px] uppercase text-[#0F4C81]">
+                {compName}
+              </p>
+              <p className="font-black text-gray-700 pt-4 border-t border-dashed border-gray-400 w-36 mt-3 text-[8px]">
+                Authorized Signature
+              </p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <div className="h-8 w-36 border-b border-dashed border-gray-300" />
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col items-center justify-center">
-          <div className="h-8 w-36 border-b border-dashed border-gray-300" />
-        </div>
-      </div>
     </div>
   );
 }

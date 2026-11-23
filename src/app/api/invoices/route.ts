@@ -100,6 +100,7 @@ export async function POST(req: NextRequest) {
             create: validData.items.map((item) => ({
               sortOrder: item.sortOrder,
               description: item.description,
+              hsn: item.hsn || null,
               quantity: item.quantity,
               rate: item.rate,
               gstRate: item.gstRate,

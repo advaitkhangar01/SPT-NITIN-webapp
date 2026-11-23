@@ -41,7 +41,8 @@ export async function GET(
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `${disposition}; filename="Quotation-${quotation.quotationNumber}.pdf"`,
-          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Content-Length": String(pdfBuffer.byteLength),
+          "Cache-Control": "private, no-cache, no-store, must-revalidate",
         },
       });
     } catch (pdfErr) {
