@@ -113,3 +113,24 @@ Or use the bundled Chromium:
 ```bash
 npx puppeteer browsers install chrome
 ```
+
+---
+
+## 6. Reengineered Performance & Two-Button Workflow
+
+- **Primary Actions:** Both Quotation and Invoice editors feature strictly two actions:
+  - **`Save`**: Validates form, updates database, shows confirmation inline, remains on page.
+  - **`Save & Print`**: Validates form, saves document, and immediately triggers native browser printing (`window.print()`) in the exact same tab (physical print or "Save as PDF").
+- **Audit Verification Suite:**
+  ```bash
+  npm run test:audit
+  ```
+  Runs 12 automated checks for currency formatting, GST arithmetic, sequential atomic allocation, and selective database projections.
+- **Server Health Check:**
+  `GET /api/health` returns system uptime, database latency, and memory RSS/heap status without authentication requirements.
+- **Instant Rollback:**
+  If any release issue occurs on the VPS:
+  ```bash
+  git revert HEAD --no-edit
+  ./deploy.sh
+  ```

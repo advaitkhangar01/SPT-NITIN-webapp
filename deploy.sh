@@ -14,8 +14,9 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BACKUP_FILE="$APP_DIR/backups/dev_backup_${TIMESTAMP}.db"
 
 if [ -f "$APP_DIR/prisma/dev.db" ]; then
-    # Use sqlite3 .backup for an atomic, lock-free snapshot of SQLite WAL database
+    # Flush SQLite WAL to database file before snapshot
     if command -v sqlite3 >/dev/null 2>&1; then
+        sqlite3 "$APP_DIR/prisma/dev.db" "PRAGMA wal_checkpoint(TRUNCATE);" 2>/dev/null || true
         sqlite3 "$APP_DIR/prisma/dev.db" ".backup '$BACKUP_FILE'"
     else
         cp "$APP_DIR/prisma/dev.db" "$BACKUP_FILE"
@@ -39,6 +40,9 @@ npx prisma db push --skip-generate
 
 echo "=== [5/6] Building production Next.js application ==="
 npx next build
+
+echo "=== [5.5/6] Running automated integrity & audit test suite ==="
+npm run test:audit
 
 echo "=== [6/6] Ensuring proper permissions & reloading PM2 ==="
 # Ensure prisma directory and database are writable by the current user
