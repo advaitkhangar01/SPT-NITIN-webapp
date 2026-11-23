@@ -15,6 +15,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get("q")?.trim() || "";
     const status = searchParams.get("status")?.trim() || "";
+    const limitParam = parseInt(searchParams.get("limit") || "100", 10);
+    const pageParam = parseInt(searchParams.get("page") || "1", 10);
+    const take = Math.min(Math.max(1, isNaN(limitParam) ? 100 : limitParam), 200);
+    const skip = Math.max(0, (isNaN(pageParam) ? 1 : pageParam) - 1) * take;
 
     const whereClause: any = {};
     if (query) {
@@ -29,6 +33,8 @@ export async function GET(req: NextRequest) {
 
     const invoices = await prisma.invoice.findMany({
       where: whereClause,
+      take,
+      skip,
       select: {
         id: true,
         invoiceNumber: true,

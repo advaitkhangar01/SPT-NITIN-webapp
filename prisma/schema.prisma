@@ -66,6 +66,9 @@ model Quotation {
   updatedAt           DateTime        @updatedAt
   items               QuotationItem[]
   invoices            Invoice[]
+
+  @@index([createdAt])
+  @@index([customerName])
 }
 
 model QuotationItem {
@@ -103,6 +106,10 @@ model Invoice {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   items           InvoiceItem[]
+
+  @@index([createdAt])
+  @@index([customerName])
+  @@index([quotationId])
 }
 
 model InvoiceItem {
