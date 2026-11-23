@@ -21,6 +21,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/static") ||
     pathname === "/login" ||
     pathname === "/api/auth/login" ||
+    pathname === "/api/health" ||
     pathname === "/logo.png" ||
     pathname === "/favicon.ico"
   ) {
