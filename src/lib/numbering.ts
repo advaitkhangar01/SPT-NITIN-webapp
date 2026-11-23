@@ -131,3 +131,46 @@ export async function allocateInvoiceNumber(tx: any): Promise<string> {
 
   return candidate;
 }
+
+/**
+ * Returns both the company snapshot and the preview next quotation number
+ * in a single database query, avoiding the N+1 on the new quotation page.
+ */
+export async function getCompanyAndNextQuotationNumber(): Promise<{
+  quotationPrefix: string;
+  invoicePrefix: string;
+  nextQuotationNumber: number;
+  nextInvoiceNumber: number;
+}> {
+  try {
+    let settings = await prisma.companySettings.findUnique({
+      where: { id: "default" },
+      select: {
+        quotationPrefix: true,
+        invoicePrefix: true,
+        nextQuotationNumber: true,
+        nextInvoiceNumber: true,
+      },
+    });
+    if (!settings) {
+      settings = await prisma.companySettings.create({
+        data: { id: "default" },
+        select: {
+          quotationPrefix: true,
+          invoicePrefix: true,
+          nextQuotationNumber: true,
+          nextInvoiceNumber: true,
+        },
+      });
+    }
+    return settings;
+  } catch (err) {
+    console.error("getCompanyAndNextQuotationNumber error:", err);
+    return {
+      quotationPrefix: "QT",
+      invoicePrefix: "INV",
+      nextQuotationNumber: 1,
+      nextInvoiceNumber: 1,
+    };
+  }
+}

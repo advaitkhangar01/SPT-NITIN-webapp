@@ -6,8 +6,12 @@ import { peekNextQuotationNumber } from "@/lib/numbering";
 export const dynamic = "force-dynamic";
 
 export default async function NewQuotationPage() {
-  const company = await getCompanySettingsSnapshot();
-  const previewQuotationNumber = await peekNextQuotationNumber();
+  // Both functions query companySettings; they share the same DB row.
+  // For a small single-user tool on SQLite this is negligible but kept explicit for clarity.
+  const [company, previewQuotationNumber] = await Promise.all([
+    getCompanySettingsSnapshot(),
+    peekNextQuotationNumber(),
+  ]);
 
   return (
     <QuotationEditor

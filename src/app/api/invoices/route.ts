@@ -29,10 +29,17 @@ export async function GET(req: NextRequest) {
 
     const invoices = await prisma.invoice.findMany({
       where: whereClause,
-      include: {
-        items: {
-          orderBy: { sortOrder: "asc" },
-        },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        customerName: true,
+        invoiceDate: true,
+        dueDate: true,
+        totalAmount: true,
+        amountPaid: true,
+        paymentStatus: true,
+        createdBy: true,
+        createdAt: true,
       },
       orderBy: { createdAt: "desc" },
     });

@@ -1,16 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import QuotationPreview, { QuotationData, QuotationItemData } from "./QuotationPreview";
 import { CompanySnapshot } from "@/lib/company";
-import { downloadPdfBlob } from "@/lib/download";
 import { PREDEFINED_COMPONENTS, PROPOSED_SYSTEM_OPTIONS, CONNECTION_TYPE_OPTIONS } from "@/lib/presets";
 import { formatDateDMY, formatIndianCurrency, parseCurrencyInput } from "@/lib/formatters";
 import {
   Save,
   Printer,
-  FileDown,
   Plus,
   Trash2,
   AlertCircle,
@@ -35,7 +32,6 @@ export default function QuotationEditor({
   company,
   previewQuotationNumber,
 }: QuotationEditorProps) {
-  const router = useRouter();
 
   // Form State
   const [quotationNumber, setQuotationNumber] = useState<string>(
@@ -195,12 +191,15 @@ export default function QuotationEditor({
     return Object.keys(errs).length === 0;
   };
 
-  // Save handler
-  const handleSave = async (generatePdfAfter: boolean = false) => {
+  // Save handler — printAfter=true saves then immediately invokes browser print dialog
+  const handleSave = async (printAfter: boolean = false) => {
     if (!validateForm()) {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
+
+    // Guard against double-click duplicate saves
+    if (isSaving) return;
 
     setIsSaving(true);
     setSavedSuccess(null);
@@ -250,44 +249,25 @@ export default function QuotationEditor({
       const docId = json.quotation.id;
       setSavedDocId(docId);
       setQuotationNumber(json.quotation.quotationNumber);
-      setSavedSuccess(
-        `Quotation ${json.quotation.quotationNumber} saved successfully!`
-      );
 
-      if (generatePdfAfter) {
+      if (printAfter) {
         setSavedSuccess(
-          `Quotation ${json.quotation.quotationNumber} saved! Downloading PDF and navigating to history...`
+          `Quotation ${json.quotation.quotationNumber} saved. Opening print dialog…`
         );
-
-        try {
-          await downloadPdfBlob(
-            `/api/quotations/${docId}/pdf`,
-            `Quotation-${json.quotation.quotationNumber}.pdf`
-          );
-        } catch (pdfErr) {
-          console.error("PDF download error, falling back to print page:", pdfErr);
-          window.open(`/quotations/${docId}/print?autoPrint=true`, "_blank");
-        }
-
-        // Navigate to Quotations History after download
+        // Brief tick so React paints the success banner before print blocks the thread
         setTimeout(() => {
-          router.push("/quotations");
-        }, 1500);
-      } else if (!isEdit) {
-        setTimeout(() => {
-          router.push(`/quotations/${docId}`);
-        }, 1200);
+          window.print();
+        }, 120);
+      } else {
+        setSavedSuccess(
+          `Quotation ${json.quotation.quotationNumber} saved successfully.`
+        );
       }
     } catch (err: any) {
       alert(err.message || "An error occurred while saving.");
     } finally {
       setIsSaving(false);
     }
-  };
-
-  // Direct Browser Native Print
-  const handleBrowserPrint = () => {
-    window.print();
   };
 
   const previewData: QuotationData = {
@@ -318,24 +298,9 @@ export default function QuotationEditor({
     <div className="max-w-[1600px] mx-auto p-4 sm:p-6">
       {/* Notifications */}
       {savedSuccess && (
-        <div className="no-print mb-4 p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-md flex items-center justify-between text-sm shadow-sm">
-          <div className="flex items-center space-x-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            <span className="font-semibold">{savedSuccess}</span>
-          </div>
-          {savedDocId && (
-            <div className="flex space-x-2">
-              <a
-                href={`/api/quotations/${savedDocId}/pdf`}
-                target="_blank"
-                rel="noreferrer"
-                className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded flex items-center space-x-1"
-              >
-                <FileDown className="w-3.5 h-3.5" />
-                <span>Download PDF</span>
-              </a>
-            </div>
-          )}
+        <div className="no-print mb-4 p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-md flex items-center space-x-2 text-sm shadow-sm">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+          <span className="font-semibold">{savedSuccess}</span>
         </div>
       )}
 
@@ -870,7 +835,7 @@ export default function QuotationEditor({
             )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons — Save | Save & Print */}
           <div className="pt-2 border-t border-slate-200 flex flex-wrap gap-2">
             <button
               type="button"
@@ -879,7 +844,7 @@ export default function QuotationEditor({
               className="flex-1 min-w-[130px] bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-4 rounded text-xs flex items-center justify-center space-x-1.5 transition shadow-sm disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              <span>{isSaving ? "Saving..." : "Save Draft"}</span>
+              <span>{isSaving ? "Saving…" : "Save"}</span>
             </button>
 
             <button
@@ -888,18 +853,8 @@ export default function QuotationEditor({
               onClick={() => handleSave(true)}
               className="flex-1 min-w-[160px] bg-[#F37021] hover:bg-[#D95D14] text-white font-bold py-2.5 px-4 rounded text-xs flex items-center justify-center space-x-1.5 transition shadow-sm disabled:opacity-50"
             >
-              <FileDown className="w-4 h-4" />
-              <span>Save & Generate PDF</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleBrowserPrint}
-              className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded text-xs flex items-center space-x-1 transition border border-slate-300"
-              title="Direct Print or Save as PDF"
-            >
               <Printer className="w-4 h-4" />
-              <span className="hidden sm:inline">Print</span>
+              <span>{isSaving ? "Saving…" : "Save & Print"}</span>
             </button>
           </div>
         </div>

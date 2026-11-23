@@ -6,8 +6,10 @@ import { peekNextInvoiceNumber } from "@/lib/numbering";
 export const dynamic = "force-dynamic";
 
 export default async function NewInvoicePage() {
-  const company = await getCompanySettingsSnapshot();
-  const previewInvoiceNumber = await peekNextInvoiceNumber();
+  const [company, previewInvoiceNumber] = await Promise.all([
+    getCompanySettingsSnapshot(),
+    peekNextInvoiceNumber(),
+  ]);
 
   return (
     <InvoiceEditor

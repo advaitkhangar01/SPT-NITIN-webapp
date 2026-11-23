@@ -4,7 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { formatIndianCurrency } from "@/lib/formatters";
 import { FileText, Receipt, PlusCircle, ArrowRight } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+// Revalidate the dashboard every 60 seconds — recent records update promptly
+// without hitting the DB on every single page load
+export const revalidate = 60;
 
 export default async function HomePage() {
   const recentQuotations = await prisma.quotation.findMany({
