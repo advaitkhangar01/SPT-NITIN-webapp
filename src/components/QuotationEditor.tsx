@@ -872,7 +872,7 @@ export default function QuotationEditor({
 
         {/* RIGHT PANEL: Live A4 Preview (~58% on desktop) */}
         <div
-          className={`lg:col-span-7 flex-col items-center w-full max-w-full overflow-hidden ${
+          className={`lg:col-span-7 flex-col items-center w-full max-w-full overflow-hidden print:!flex ${
             activeMobileTab === "preview" ? "flex" : "hidden lg:flex"
           }`}
         >
@@ -931,6 +931,7 @@ export default function QuotationEditor({
                 height: `${297 * previewScale}mm`,
                 flexShrink: 0,
                 transition: "width 0.15s ease-out, height 0.15s ease-out",
+                contain: "paint layout",
               }}
             >
               <div
