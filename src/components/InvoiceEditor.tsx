@@ -359,9 +359,20 @@ export default function InvoiceEditor({
     <div className="max-w-[1600px] mx-auto p-4 sm:p-6">
       {/* Notifications */}
       {savedSuccess && (
-        <div className="no-print mb-4 p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-md flex items-center space-x-2 text-sm shadow-sm">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-          <span className="font-semibold">{savedSuccess}</span>
+        <div className="no-print mb-4 p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-md flex items-center justify-between text-sm shadow-sm">
+          <div className="flex items-center space-x-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <span className="font-semibold">{savedSuccess}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1.5 px-3 rounded shadow-xs flex items-center space-x-1 transition active:scale-95"
+            title="Open print dialog again"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print Again</span>
+          </button>
         </div>
       )}
 
@@ -932,7 +943,7 @@ export default function InvoiceEditor({
               type="button"
               disabled={isSaving}
               onClick={() => handleSave(false)}
-              className="flex-1 min-w-[130px] bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-4 rounded text-xs flex items-center justify-center space-x-1.5 transition shadow-sm disabled:opacity-50"
+              className="flex-1 min-w-[130px] min-h-[44px] touch-manipulation bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-4 rounded text-xs flex items-center justify-center space-x-1.5 transition shadow-sm disabled:opacity-50 active:scale-98"
             >
               <Save className="w-4 h-4" />
               <span>{isSaving ? "Saving…" : "Save"}</span>
@@ -942,7 +953,7 @@ export default function InvoiceEditor({
               type="button"
               disabled={isSaving}
               onClick={() => handleSave(true)}
-              className="flex-1 min-w-[160px] bg-[#F37021] hover:bg-[#D95D14] text-white font-bold py-2.5 px-4 rounded text-xs flex items-center justify-center space-x-1.5 transition shadow-sm disabled:opacity-50"
+              className="flex-1 min-w-[160px] min-h-[44px] touch-manipulation bg-[#F37021] hover:bg-[#D95D14] text-white font-bold py-2.5 px-4 rounded text-xs flex items-center justify-center space-x-1.5 transition shadow-sm disabled:opacity-50 active:scale-98"
             >
               <Printer className="w-4 h-4" />
               <span>{isSaving ? "Saving…" : "Save & Print"}</span>
