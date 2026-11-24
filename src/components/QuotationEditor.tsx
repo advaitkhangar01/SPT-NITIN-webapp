@@ -872,12 +872,12 @@ export default function QuotationEditor({
 
         {/* RIGHT PANEL: Live A4 Preview (~58% on desktop) */}
         <div
-          className={`lg:col-span-7 flex-col items-center w-full max-w-full overflow-hidden print:!flex ${
+          className={`no-print lg:col-span-7 flex-col items-center w-full max-w-full overflow-hidden ${
             activeMobileTab === "preview" ? "flex" : "hidden lg:flex"
           }`}
         >
           {/* Controls Bar */}
-          <div className="no-print w-full flex items-center justify-between mb-3 bg-white p-2 px-3 sm:px-4 rounded-lg border border-slate-200 shadow-sm text-xs text-slate-600">
+          <div className="w-full flex items-center justify-between mb-3 bg-white p-2 px-3 sm:px-4 rounded-lg border border-slate-200 shadow-sm text-xs text-slate-600">
             <div className="flex items-center space-x-2">
               <span className="font-bold text-[#0F4C81]">Live A4 Preview</span>
               <span className="text-slate-400 hidden sm:inline">|</span>
@@ -951,6 +951,15 @@ export default function QuotationEditor({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Dedicated 100% Unscaled A4 Document for Native Print & Save & Print */}
+      <div className="hidden print:block w-full m-0 p-0">
+        <QuotationPreview
+          data={previewData}
+          company={company}
+          scale={1}
+        />
       </div>
     </div>
   );

@@ -46,8 +46,8 @@ fi
 echo "=== [5/6] Building production Next.js application ==="
 npx next build
 
-echo "=== [5.5/6] Running automated integrity & audit test suite ==="
-npm run test:audit
+echo "=== [5.5/6] Running automated integrity & PDF regression test suite ==="
+npm test
 
 echo "=== [6/6] Ensuring proper permissions & reloading PM2 ==="
 # Ensure prisma directory and database are writable by the current user

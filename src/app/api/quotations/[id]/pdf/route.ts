@@ -30,8 +30,8 @@ export async function GET(
     const baseUrl = process.env.INTERNAL_BASE_URL || `http://127.0.0.1:${internalPort}`;
     const printUrl = `${baseUrl}/quotations/${params.id}/print`;
 
-    const isPreview = req.nextUrl.searchParams.get("preview") === "true";
-    const disposition = isPreview ? "inline" : "attachment";
+    const isDownload = req.nextUrl.searchParams.get("download") === "true";
+    const disposition = isDownload ? "attachment" : "inline";
 
     try {
       const pdfBuffer = await generatePdfFromUrl(printUrl, sessionToken);

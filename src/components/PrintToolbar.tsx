@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Printer, Download, ArrowLeft, Loader2, CheckCircle } from "lucide-react";
+import { Printer, Download, ArrowLeft, Loader2, FileText } from "lucide-react";
 import { downloadPdfBlob } from "@/lib/download";
 
 interface PrintToolbarProps {
@@ -20,6 +20,11 @@ export default function PrintToolbar({
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleViewPdf = () => {
+    // Navigate in same tab to inline server PDF
+    window.location.href = pdfDownloadHref;
   };
 
   const handleDownload = async () => {
@@ -67,12 +72,23 @@ export default function PrintToolbar({
             <span>Print / Save as PDF</span>
           </button>
 
+          {/* Same-Tab Server PDF View */}
+          <button
+            type="button"
+            onClick={handleViewPdf}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 hover:text-white rounded-lg text-xs font-semibold transition shadow-sm active:scale-95 border border-slate-600"
+            title="Present server-generated PDF in current tab"
+          >
+            <FileText className="w-3.5 h-3.5 text-blue-400" />
+            <span className="hidden xs:inline">Server PDF</span>
+          </button>
+
           {/* Direct Server PDF Download Button */}
           <button
             type="button"
             onClick={handleDownload}
             disabled={downloading}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition shadow-sm active:scale-95 disabled:opacity-50"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-semibold transition shadow-sm active:scale-95 disabled:opacity-50"
             title="Download PDF directly to file system"
           >
             {downloading ? (
@@ -83,8 +99,7 @@ export default function PrintToolbar({
             ) : (
               <>
                 <Download className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Direct Download</span>
-                <span className="xs:hidden">Download</span>
+                <span className="hidden xs:inline">Download</span>
               </>
             )}
           </button>

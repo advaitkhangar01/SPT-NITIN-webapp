@@ -1,5 +1,16 @@
 /**
- * Reliable client-side PDF downloader across desktop & mobile browsers.
+ * Reliable same-tab PDF presentation and client-side downloader.
+ */
+
+/**
+ * Present the PDF directly in the existing browser tab without forcing a file download.
+ */
+export function openPdfSameTab(endpointUrl: string): void {
+  window.location.href = endpointUrl;
+}
+
+/**
+ * Download PDF file to client storage when explicitly requested.
  */
 export async function downloadPdfBlob(
   endpointUrl: string,
@@ -9,7 +20,11 @@ export async function downloadPdfBlob(
   const timeoutId = setTimeout(() => controller.abort(), 25000);
 
   try {
-    const res = await fetch(endpointUrl, {
+    const downloadUrl = endpointUrl.includes("?")
+      ? `${endpointUrl}&download=true`
+      : `${endpointUrl}?download=true`;
+
+    const res = await fetch(downloadUrl, {
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -42,14 +57,14 @@ export async function downloadPdfBlob(
       link.click();
       document.body.removeChild(link);
     } catch (clickErr) {
-      // Fallback: open directly in new tab if download trigger blocked
-      window.open(blobUrl, "_blank");
+      // Fallback: present directly in existing window
+      window.location.href = blobUrl;
     }
 
-    // Give browser time to start the download before revoking
+    // Give browser time to process before revoking
     setTimeout(() => {
       window.URL.revokeObjectURL(blobUrl);
-    }, 4000);
+    }, 15000);
   } catch (err: any) {
     clearTimeout(timeoutId);
     if (err.name === "AbortError") {
