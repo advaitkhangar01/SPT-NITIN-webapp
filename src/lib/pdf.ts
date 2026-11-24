@@ -1,4 +1,5 @@
 import puppeteer, { Browser } from "puppeteer";
+import fs from "fs";
 
 let cachedBrowser: Browser | null = null;
 let idleCloseTimer: NodeJS.Timeout | null = null;
@@ -6,6 +7,23 @@ let activePdfJobs = 0;
 const MAX_CONCURRENT_PDF_JOBS = 2;
 const IDLE_BROWSER_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes idle cleanup
 const jobQueue: (() => void)[] = [];
+
+function findChromiumExecutable(): string | undefined {
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    return process.env.PUPPETEER_EXECUTABLE_PATH;
+  }
+  const candidates = [
+    "/usr/bin/chromium-browser",
+    "/usr/bin/chromium",
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/snap/bin/chromium",
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return undefined;
+}
 
 /**
  * Returns a warm singleton browser instance, launching one if needed.
@@ -20,10 +38,12 @@ async function getWarmBrowser(): Promise<Browser> {
     return cachedBrowser;
   }
 
+  const linuxArgs = process.platform === "linux" ? ["--no-zygote", "--single-process"] : [];
+
   // Launch a new warm headless Chromium process
   cachedBrowser = await puppeteer.launch({
     headless: true,
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    executablePath: findChromiumExecutable(),
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -40,6 +60,7 @@ async function getWarmBrowser(): Promise<Browser> {
       "--disable-features=TranslateUI",
       "--disable-component-update",
       "--font-render-hinting=none",
+      ...linuxArgs,
     ],
   });
 
