@@ -72,6 +72,22 @@ export async function PUT(
 
     const validData = validation.data;
 
+    const targetInvoiceNumber = validData.invoiceNumber || existing.invoiceNumber;
+    if (targetInvoiceNumber !== existing.invoiceNumber) {
+      const conflict = await prisma.invoice.findFirst({
+        where: {
+          invoiceNumber: targetInvoiceNumber,
+          NOT: { id: params.id },
+        },
+      });
+      if (conflict) {
+        return NextResponse.json(
+          { error: `Invoice number "${targetInvoiceNumber}" is already in use by another invoice` },
+          { status: 409 }
+        );
+      }
+    }
+
     let existingSnapshot: any = {};
     try {
       existingSnapshot = JSON.parse(existing.companySnapshot || "{}");
@@ -95,6 +111,7 @@ export async function PUT(
       const inv = await tx.invoice.update({
         where: { id: params.id },
         data: {
+          invoiceNumber: targetInvoiceNumber,
           invoiceDate: validData.invoiceDate,
           dueDate: validData.dueDate,
           customerName: validData.customerName,

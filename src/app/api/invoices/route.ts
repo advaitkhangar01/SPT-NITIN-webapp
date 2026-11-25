@@ -74,6 +74,19 @@ export async function POST(req: NextRequest) {
     }
 
     const validData = validation.data;
+
+    if (validData.invoiceNumber) {
+      const existingInv = await prisma.invoice.findUnique({
+        where: { invoiceNumber: validData.invoiceNumber },
+      });
+      if (existingInv) {
+        return NextResponse.json(
+          { error: `Invoice number "${validData.invoiceNumber}" is already in use by another invoice` },
+          { status: 409 }
+        );
+      }
+    }
+
     const baseSnapshot = await getCompanySettingsSnapshot();
     const companySnapshot = {
       ...baseSnapshot,
@@ -87,7 +100,7 @@ export async function POST(req: NextRequest) {
     const snapshotStr = JSON.stringify(companySnapshot);
 
     const invoice = await prisma.$transaction(async (tx) => {
-      const invoiceNumber = await allocateInvoiceNumber(tx);
+      const invoiceNumber = validData.invoiceNumber || (await allocateInvoiceNumber(tx));
 
       const created = await tx.invoice.create({
         data: {

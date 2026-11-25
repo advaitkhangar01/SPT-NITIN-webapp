@@ -15,6 +15,7 @@ export interface ValidatedInvoiceItem {
 }
 
 export interface ValidatedInvoiceInput {
+  invoiceNumber?: string;
   quotationId?: string | null;
   invoiceDate: string;
   dueDate: string;
@@ -42,6 +43,20 @@ export interface ValidatedInvoiceInput {
 export function validateInvoicePayload(body: any): ValidationResult<ValidatedInvoiceInput> {
   if (!body || typeof body !== "object") {
     return { success: false, error: "Invalid request payload" };
+  }
+
+  let invoiceNumber: string | undefined = undefined;
+  if (body.invoiceNumber !== undefined && body.invoiceNumber !== null) {
+    if (typeof body.invoiceNumber !== "string") {
+      return { success: false, error: "Invoice number must be a text value" };
+    }
+    invoiceNumber = body.invoiceNumber.trim();
+    if (!invoiceNumber) {
+      return { success: false, error: "Invoice number cannot be empty" };
+    }
+    if (invoiceNumber.length > 50) {
+      return { success: false, error: "Invoice number cannot exceed 50 characters" };
+    }
   }
 
   const customerName = typeof body.customerName === "string" ? body.customerName.trim() : "";
@@ -138,6 +153,7 @@ export function validateInvoicePayload(body: any): ValidationResult<ValidatedInv
   return {
     success: true,
     data: {
+      invoiceNumber,
       quotationId: typeof body.quotationId === "string" ? body.quotationId : null,
       invoiceDate,
       dueDate,

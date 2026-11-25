@@ -236,6 +236,7 @@ export default function InvoiceEditor({
 
   const validateForm = () => {
     const errs: Record<string, string> = {};
+    if (!invoiceNumber.trim()) errs.invoiceNumber = "Invoice number is required";
     if (!invoiceDate.trim()) errs.invoiceDate = "Invoice date is required";
     if (!customerName.trim()) errs.customerName = "Customer name is required";
     if (items.length === 0) errs.items = "Add at least one item";
@@ -260,6 +261,7 @@ export default function InvoiceEditor({
 
     const payload = {
       id: initialData?.id,
+      invoiceNumber: invoiceNumber.trim(),
       quotationId: initialData?.quotationId,
       invoiceDate,
       dueDate,
@@ -419,7 +421,7 @@ export default function InvoiceEditor({
                 {initialData?.id ? "Edit Tax Invoice" : "New Tax Invoice"}
               </h2>
               <p className="text-xs text-slate-500">
-                Number: <span className="font-bold text-slate-700">{invoiceNumber}</span>
+                Number: <span className="font-bold text-slate-700">{invoiceNumber || "—"}</span>
               </p>
             </div>
             {initialData?.quotationId && (
@@ -434,7 +436,34 @@ export default function InvoiceEditor({
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1">
               Invoice Dates & References
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Invoice Number *
+                </label>
+                <input
+                  type="text"
+                  value={invoiceNumber}
+                  onChange={(e) => {
+                    setInvoiceNumber(e.target.value);
+                    if (errors.invoiceNumber) {
+                      setErrors((prev) => {
+                        const copy = { ...prev };
+                        delete copy.invoiceNumber;
+                        return copy;
+                      });
+                    }
+                  }}
+                  placeholder="e.g. INV-2026-001"
+                  className={`w-full text-xs px-3 py-2 font-medium border rounded focus:ring-1 focus:ring-[#0F4C81] outline-none ${
+                    errors.invoiceNumber ? "border-red-500 bg-red-50" : "border-slate-300"
+                  }`}
+                />
+                {errors.invoiceNumber && (
+                  <p className="text-[10px] text-red-600 mt-0.5">{errors.invoiceNumber}</p>
+                )}
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Invoice Date *
