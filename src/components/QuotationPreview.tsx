@@ -63,23 +63,24 @@ export default function QuotationPreview({
   scale = 1,
 }: QuotationPreviewProps) {
   // Use company snapshot or fallback values
-  const compName = company.displayName || "SHASHIKALA POWER TECH";
-  const tagline = company.tagline || "SOLAR & ENERGY SOLUTIONS";
-  const gst = company.gstNumber || "27AJRPN3091N1ZE";
-  const phone = company.phone || "+91 95271 61595";
-  const email = sanitizeBusinessEmail(company.email);
-  const website = company.website || "www.shashikalapowertech.in";
+  const safeCompany = company || ({} as Partial<CompanySnapshot>);
+  const compName = safeCompany.displayName || "SHASHIKALA POWER TECH";
+  const tagline = safeCompany.tagline || "SOLAR & ENERGY SOLUTIONS";
+  const gst = safeCompany.gstNumber || "27AJRPN3091N1ZE";
+  const phone = safeCompany.phone || "+91 95271 61595";
+  const email = sanitizeBusinessEmail(safeCompany.email);
+  const website = safeCompany.website || "www.shashikalapowertech.in";
   const address =
-    company.address ||
+    safeCompany.address ||
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";
-  const logo = company.logoPath || "/logo.png";
+  const logo = safeCompany.logoPath || "/logo.png";
   const showDocs = data.showDocumentsRequired ?? true;
   const showBank = data.showBankDetails ?? true;
-  const bankName = data.bankName || company.bankName || "Maharashtra State Co-operative Bank";
-  const accountNumber = data.accountNumber || company.accountNumber || "0058107040000460";
-  const ifscCode = data.ifscCode || company.ifscCode || "MSCI0082056";
-  const branch = data.branch || company.branch || "Nagpur Branch";
-  const accountName = data.accountName || company.accountName || compName;
+  const bankName = data.bankName || safeCompany.bankName || "Maharashtra State Co-operative Bank";
+  const accountNumber = data.accountNumber || safeCompany.accountNumber || "0058107040000460";
+  const ifscCode = data.ifscCode || safeCompany.ifscCode || "MSCI0082056";
+  const branch = data.branch || safeCompany.branch || "Nagpur Branch";
+  const accountName = data.accountName || safeCompany.accountName || compName;
 
   const itemCount = data.items?.length || 0;
   const isDense = itemCount > 4;
@@ -322,7 +323,9 @@ export default function QuotationPreview({
             </thead>
             <tbody className="text-[10px] divide-y divide-slate-200">
               {data.items && data.items.length > 0 ? (
-                data.items.map((item, idx) => (
+                data.items.map((item, idx) => {
+                  if (!item) return null;
+                  return (
                   <tr
                     key={idx}
                     className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/70"}
@@ -349,7 +352,8 @@ export default function QuotationPreview({
                       {item.quantity || "—"}
                     </td>
                   </tr>
-                ))
+                );
+              })
               ) : (
                 <tr>
                   <td colSpan={4} className="py-6 text-center text-slate-400">

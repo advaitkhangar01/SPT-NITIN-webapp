@@ -29,7 +29,10 @@ else
 fi
 
 echo "=== [2/6] Pulling latest changes from git ==="
-git pull origin main
+git config core.fileMode false
+git checkout -- deploy.sh 2>/dev/null || true
+git fetch origin main
+git reset --hard origin/main
 
 echo "=== [3/6] Installing dependencies ==="
 npm install

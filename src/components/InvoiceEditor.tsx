@@ -96,32 +96,33 @@ export default function InvoiceEditor({
   const [notes, setNotes] = useState<string>(initialData?.notes || "");
 
   // Flexible Banking Details State (Per Invoice)
+  const safeCompany = company || ({} as Partial<CompanySnapshot>);
   const [accountName, setAccountName] = useState<string>(
-    company.accountName || "SHASHIKALA POWER TECH"
+    safeCompany.accountName || "SHASHIKALA POWER TECH"
   );
   const [bankName, setBankName] = useState<string>(
-    company.bankName || "Maharashtra State Co-operative Bank"
+    safeCompany.bankName || "Maharashtra State Co-operative Bank"
   );
   const [accountNumber, setAccountNumber] = useState<string>(
-    company.accountNumber || "0058107040000460"
+    safeCompany.accountNumber || "0058107040000460"
   );
   const [ifscCode, setIfscCode] = useState<string>(
-    company.ifscCode || "MSCI0082056"
+    safeCompany.ifscCode || "MSCI0082056"
   );
   const [branch, setBranch] = useState<string>(
-    company.branch || "Nagpur Branch"
+    safeCompany.branch || "Nagpur Branch"
   );
   const [upiId, setUpiId] = useState<string>(
-    company.upiId || ""
+    safeCompany.upiId || ""
   );
 
   const handleResetBankDefaults = () => {
-    setAccountName(company.accountName || "SHASHIKALA POWER TECH");
-    setBankName(company.bankName || "Maharashtra State Co-operative Bank");
-    setAccountNumber(company.accountNumber || "0058107040000460");
-    setIfscCode(company.ifscCode || "MSCI0082056");
-    setBranch(company.branch || "Nagpur Branch");
-    setUpiId(company.upiId || "");
+    setAccountName(safeCompany.accountName || "SHASHIKALA POWER TECH");
+    setBankName(safeCompany.bankName || "Maharashtra State Co-operative Bank");
+    setAccountNumber(safeCompany.accountNumber || "0058107040000460");
+    setIfscCode(safeCompany.ifscCode || "MSCI0082056");
+    setBranch(safeCompany.branch || "Nagpur Branch");
+    setUpiId(safeCompany.upiId || "");
   };
 
   // Calculated totals
@@ -1016,10 +1017,9 @@ export default function InvoiceEditor({
             <div
               style={{
                 width: `${210 * previewScale}mm`,
-                height: `${297 * previewScale}mm`,
+                minHeight: `${297 * previewScale}mm`,
                 flexShrink: 0,
-                transition: "width 0.15s ease-out, height 0.15s ease-out",
-                contain: "paint layout",
+                transition: "width 0.15s ease-out",
               }}
             >
               <div
@@ -1027,7 +1027,7 @@ export default function InvoiceEditor({
                   transform: `scale(${previewScale})`,
                   transformOrigin: "top left",
                   width: "210mm",
-                  height: "297mm",
+                  minHeight: "297mm",
                 }}
               >
                 <InvoicePreview

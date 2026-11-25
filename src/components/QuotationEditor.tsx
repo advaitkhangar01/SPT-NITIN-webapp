@@ -91,20 +91,21 @@ export default function QuotationEditor({
   const [showBankDetails, setShowBankDetails] = useState<boolean>(
     initialData?.showBankDetails ?? true
   );
+  const safeCompany = company || ({} as Partial<CompanySnapshot>);
   const [bankName, setBankName] = useState<string>(
-    initialData?.bankName || company.bankName || "Maharashtra State Co-operative Bank"
+    initialData?.bankName || safeCompany.bankName || "Maharashtra State Co-operative Bank"
   );
   const [accountNumber, setAccountNumber] = useState<string>(
-    initialData?.accountNumber || company.accountNumber || "0058107040000460"
+    initialData?.accountNumber || safeCompany.accountNumber || "0058107040000460"
   );
   const [ifscCode, setIfscCode] = useState<string>(
-    initialData?.ifscCode || company.ifscCode || "MSCI0082056"
+    initialData?.ifscCode || safeCompany.ifscCode || "MSCI0082056"
   );
   const [branch, setBranch] = useState<string>(
-    initialData?.branch || company.branch || "Nagpur Branch"
+    initialData?.branch || safeCompany.branch || "Nagpur Branch"
   );
   const [accountName, setAccountName] = useState<string>(
-    initialData?.accountName || company.accountName || "SHASHIKALA POWER TECH"
+    initialData?.accountName || safeCompany.accountName || "SHASHIKALA POWER TECH"
   );
 
   // UI state
@@ -126,11 +127,11 @@ export default function QuotationEditor({
 
   // Reset bank details to company defaults
   const handleResetBankDefaults = () => {
-    setBankName(company.bankName || "Maharashtra State Co-operative Bank");
-    setAccountNumber(company.accountNumber || "0058107040000460");
-    setIfscCode(company.ifscCode || "MSCI0082056");
-    setBranch(company.branch || "Nagpur Branch");
-    setAccountName(company.accountName || "SHASHIKALA POWER TECH");
+    setBankName(safeCompany.bankName || "Maharashtra State Co-operative Bank");
+    setAccountNumber(safeCompany.accountNumber || "0058107040000460");
+    setIfscCode(safeCompany.ifscCode || "MSCI0082056");
+    setBranch(safeCompany.branch || "Nagpur Branch");
+    setAccountName(safeCompany.accountName || "SHASHIKALA POWER TECH");
   };
 
   // Quick component adder
@@ -928,10 +929,9 @@ export default function QuotationEditor({
             <div
               style={{
                 width: `${210 * previewScale}mm`,
-                height: `${297 * previewScale}mm`,
+                minHeight: `${297 * previewScale}mm`,
                 flexShrink: 0,
-                transition: "width 0.15s ease-out, height 0.15s ease-out",
-                contain: "paint layout",
+                transition: "width 0.15s ease-out",
               }}
             >
               <div
@@ -939,7 +939,7 @@ export default function QuotationEditor({
                   transform: `scale(${previewScale})`,
                   transformOrigin: "top left",
                   width: "210mm",
-                  height: "297mm",
+                  minHeight: "297mm",
                 }}
               >
                 <QuotationPreview

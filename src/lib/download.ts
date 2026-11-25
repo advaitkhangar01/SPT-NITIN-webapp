@@ -35,8 +35,10 @@ export async function downloadPdfBlob(
 
     const contentType = res.headers.get("content-type") || "";
     if (!contentType.includes("application/pdf")) {
-      // If server returned HTML (e.g. redirected fallback)
-      throw new Error("Invalid response format received from PDF service");
+      // If server returned HTML (e.g. redirected fallback on VPS without GUI Chromium),
+      // smoothly open the print preview page so native browser print triggers without throwing an error
+      window.location.href = endpointUrl;
+      return;
     }
 
     const blob = await res.blob();

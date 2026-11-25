@@ -48,15 +48,16 @@ export default function InvoicePreview({
   company,
   scale = 1,
 }: InvoicePreviewProps) {
-  const compName = company.displayName || "SHASHIKALA POWER TECH";
-  const tagline = company.tagline || "SOLAR & ENERGY SOLUTIONS";
-  const gst = company.gstNumber || "27AJRPN3091N1ZE";
-  const phone = company.phone || "+91 95271 61595";
-  const email = sanitizeBusinessEmail(company.email);
+  const safeCompany = company || ({} as Partial<CompanySnapshot>);
+  const compName = safeCompany.displayName || "SHASHIKALA POWER TECH";
+  const tagline = safeCompany.tagline || "SOLAR & ENERGY SOLUTIONS";
+  const gst = safeCompany.gstNumber || "27AJRPN3091N1ZE";
+  const phone = safeCompany.phone || "+91 95271 61595";
+  const email = sanitizeBusinessEmail(safeCompany.email);
   const address =
-    company.address ||
+    safeCompany.address ||
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";
-  const logo = company.logoPath || "/logo.png";
+  const logo = safeCompany.logoPath || "/logo.png";
 
   // Calculate GST breakdown (50% CGST + 50% SGST standard intra-state)
   const totalGst = Math.round((Number(data.gstAmount) || 0) * 100) / 100;
@@ -261,6 +262,7 @@ export default function InvoicePreview({
         <tbody>
           {data.items && data.items.length > 0 ? (
             data.items.map((item, idx) => {
+              if (!item) return null;
               const qty = Number(item.quantity) || 0;
               const rate = Number(item.rate) || 0;
               // Horizontal consistency: Taxable value = Quantity * Rate
@@ -466,32 +468,32 @@ export default function InvoicePreview({
                   <div className="space-y-0.5 text-gray-800">
                     <p className="flex justify-between">
                       <span className="text-gray-500 font-bold">a. Company Name:</span>
-                      <span className="font-black text-gray-900">{company.accountName || compName}</span>
+                      <span className="font-black text-gray-900">{safeCompany.accountName || compName}</span>
                     </p>
                     <p className="flex justify-between">
                       <span className="text-gray-500 font-bold">b. Account Number:</span>
                       <span className="font-mono font-black text-gray-900">
-                        {company.accountNumber || "0058107040000460"}
+                        {safeCompany.accountNumber || "0058107040000460"}
                       </span>
                     </p>
                     <p className="flex justify-between">
                       <span className="text-gray-500 font-bold">c. IFSC Code:</span>
                       <span className="font-mono font-black text-gray-900">
-                        {company.ifscCode || "MSCI0082056"}
+                        {safeCompany.ifscCode || "MSCI0082056"}
                       </span>
                     </p>
                     <p className="flex justify-between">
                       <span className="text-gray-500 font-bold">d. Bank & Branch:</span>
                       <span className="font-bold text-gray-900">
-                        {company.bankName || "Maharashtra State Co-operative Bank"}
-                        {company.branch ? `, ${company.branch}` : ""}
+                        {safeCompany.bankName || "Maharashtra State Co-operative Bank"}
+                        {safeCompany.branch ? `, ${safeCompany.branch}` : ""}
                       </span>
                     </p>
-                    {company.upiId ? (
+                    {safeCompany.upiId ? (
                       <>
                         <p className="flex justify-between">
                           <span className="text-gray-500 font-bold">e. UPI / VPA:</span>
-                          <span className="font-mono font-black text-[#0F4C81]">{company.upiId}</span>
+                          <span className="font-mono font-black text-[#0F4C81]">{safeCompany.upiId}</span>
                         </p>
                         <p className="flex justify-between">
                           <span className="text-gray-500 font-bold">f. GSTIN:</span>

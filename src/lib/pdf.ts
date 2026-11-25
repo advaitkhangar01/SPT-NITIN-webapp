@@ -4,8 +4,10 @@ import fs from "fs";
 let cachedBrowser: Browser | null = null;
 let idleCloseTimer: NodeJS.Timeout | null = null;
 let activePdfJobs = 0;
+let chromiumDisabledUntil = 0;
 const MAX_CONCURRENT_PDF_JOBS = 2;
 const IDLE_BROWSER_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes idle cleanup
+const CHROMIUM_CIRCUIT_BREAKER_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes cooldown on launch failure
 const jobQueue: (() => void)[] = [];
 
 function findChromiumExecutable(): string | undefined {
@@ -29,6 +31,10 @@ function findChromiumExecutable(): string | undefined {
  * Returns a warm singleton browser instance, launching one if needed.
  */
 async function getWarmBrowser(): Promise<Browser> {
+  if (Date.now() < chromiumDisabledUntil) {
+    throw new Error("Chromium engine temporarily unavailable on this server. Fallback to client print.");
+  }
+
   if (idleCloseTimer) {
     clearTimeout(idleCloseTimer);
     idleCloseTimer = null;
@@ -38,37 +44,43 @@ async function getWarmBrowser(): Promise<Browser> {
     return cachedBrowser;
   }
 
-  const linuxArgs = process.platform === "linux" ? ["--no-zygote", "--single-process"] : [];
+  // Launch a new warm headless Chromium process with 4s fail-fast timeout
+  try {
+    cachedBrowser = await puppeteer.launch({
+      headless: true,
+      executablePath: findChromiumExecutable(),
+      timeout: 4000,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--no-first-run",
+        "--disable-extensions",
+        "--disable-background-networking",
+        "--disable-default-apps",
+        "--disable-sync",
+        "--mute-audio",
+        "--hide-scrollbars",
+        "--disable-translate",
+        "--disable-features=TranslateUI",
+        "--disable-component-update",
+        "--font-render-hinting=none",
+      ],
+    });
 
-  // Launch a new warm headless Chromium process
-  cachedBrowser = await puppeteer.launch({
-    headless: true,
-    executablePath: findChromiumExecutable(),
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-      "--no-first-run",
-      "--disable-extensions",
-      "--disable-background-networking",
-      "--disable-default-apps",
-      "--disable-sync",
-      "--mute-audio",
-      "--hide-scrollbars",
-      "--disable-translate",
-      "--disable-features=TranslateUI",
-      "--disable-component-update",
-      "--font-render-hinting=none",
-      ...linuxArgs,
-    ],
-  });
+    cachedBrowser.once("disconnected", () => {
+      cachedBrowser = null;
+    });
 
-  cachedBrowser.once("disconnected", () => {
+    return cachedBrowser;
+  } catch (launchErr) {
     cachedBrowser = null;
-  });
-
-  return cachedBrowser;
+    // Trip circuit breaker to protect Node.js server event loop and RAM
+    chromiumDisabledUntil = Date.now() + CHROMIUM_CIRCUIT_BREAKER_COOLDOWN_MS;
+    console.warn("Headless Chromium launch failed. Circuit breaker active for 5m:", launchErr);
+    throw launchErr;
+  }
 }
 
 /**
