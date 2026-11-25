@@ -1,3 +1,5 @@
+import { calculateInvoiceGst, round2 } from "./gst";
+
 export interface ValidationResult<T> {
   success: boolean;
   data?: T;
@@ -111,14 +113,10 @@ export function validateInvoicePayload(body: any): ValidationResult<ValidatedInv
       return { success: false, error: `Item #${i + 1}: GST rate must be between 0% and 100%` };
     }
 
-    const rawAmount = Number(it.amount);
-    const amount = Number.isFinite(rawAmount) && rawAmount > 0
-      ? Math.round(rawAmount * 100) / 100
-      : Math.round(quantity * rate * 100) / 100;
-
+    const amount = round2(quantity * rate);
     const hsn = typeof it.hsn === "string" ? it.hsn.trim() : undefined;
 
-    calculatedSubtotal += amount;
+    calculatedSubtotal = round2(calculatedSubtotal + amount);
 
     validatedItems.push({
       sortOrder: i,
@@ -131,17 +129,34 @@ export function validateInvoicePayload(body: any): ValidationResult<ValidatedInv
     });
   }
 
-  const subtotal = Number(body.subtotal) >= 0 ? Math.round(Number(body.subtotal) * 100) / 100 : Math.round(calculatedSubtotal * 100) / 100;
-  const gstAmount = Number(body.gstAmount) >= 0 ? Math.round(Number(body.gstAmount) * 100) / 100 : 0;
-  const discount = Math.max(0, Math.round((Number(body.discount) || 0) * 100) / 100);
+  const customerGst = typeof body.customerGst === "string" ? body.customerGst.trim().toUpperCase() : "";
+  const discount = Math.max(0, round2(Number(body.discount) || 0));
+  const isInterState = typeof body.isInterState === "boolean" ? body.isInterState : undefined;
+
+  // Authoritative product-wise calculation
+  const gstCalc = calculateInvoiceGst(validatedItems, {
+    customerGst,
+    discount,
+    isInterState,
+  });
+
+  const subtotal = gstCalc.subtotal;
+  const gstAmount = gstCalc.totalGst;
 
   if (discount > subtotal) {
     return { success: false, error: "Discount cannot exceed subtotal amount" };
   }
 
-  const expectedTotal = Math.max(0, Math.round((subtotal + gstAmount - discount) * 100) / 100);
-  const totalAmount = Number(body.totalAmount) >= 0 ? Math.round(Number(body.totalAmount) * 100) / 100 : expectedTotal;
-  const amountPaid = Math.max(0, Math.round((Number(body.amountPaid) || 0) * 100) / 100);
+  // Preserve whole-rupee rounding or exact 2-decimal total
+  let totalAmount = gstCalc.totalAmount;
+  if (Number.isFinite(Number(body.totalAmount))) {
+    const candidate = round2(Number(body.totalAmount));
+    if (candidate === gstCalc.totalAmount || candidate === gstCalc.roundedTotalAmount) {
+      totalAmount = candidate;
+    }
+  }
+
+  const amountPaid = Math.max(0, round2(Number(body.amountPaid) || 0));
 
   if (amountPaid > totalAmount && totalAmount > 0) {
     return { success: false, error: "Amount paid cannot exceed total invoice amount" };

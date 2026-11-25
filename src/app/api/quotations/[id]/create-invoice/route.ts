@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { allocateInvoiceNumber } from "@/lib/numbering";
 import { getCompanySettingsSnapshot } from "@/lib/company";
 import { formatDateDMY } from "@/lib/formatters";
+import { calculateInvoiceGst, calculateBaseRateFromGross } from "@/lib/gst";
 
 export async function POST(
   req: NextRequest,
@@ -36,15 +37,12 @@ export async function POST(
       new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)
     );
 
-    // Calculate subtotal & GST from quotation total
-    // E.g. total 2,10,000 at 18% GST -> Subtotal: 1,77,966, GST: 32,034
+    // Calculate base rate from gross quotation total via authoritative engine
     const total = quotation.totalAmount || 0;
     const gstRate = 18;
-    const subtotal = Math.round(total / (1 + gstRate / 100));
-    const gstAmount = Math.round(total - subtotal);
+    const subtotal = calculateBaseRateFromGross(total, gstRate, 1);
 
     // Build invoice items from quotation
-    // Either a comprehensive summary item or one per component
     const invoiceItems = [
       {
         description: `Solar PV System Installation (${quotation.systemCapacity || "3.00"} kW ${quotation.proposedSystem || "Rooftop Solar"})`,
@@ -55,6 +53,8 @@ export async function POST(
         amount: subtotal,
       },
     ];
+
+    const gstCalc = calculateInvoiceGst(invoiceItems);
 
     const invoice = await prisma.$transaction(async (tx) => {
       const invoiceNumber = await allocateInvoiceNumber(tx);
@@ -69,10 +69,10 @@ export async function POST(
           customerAddress: "",
           customerMobile: "",
           customerGst: "",
-          subtotal,
-          gstAmount,
+          subtotal: gstCalc.subtotal,
+          gstAmount: gstCalc.totalGst,
           discount: 0,
-          totalAmount: total,
+          totalAmount: total || gstCalc.roundedTotalAmount,
           amountPaid: 0,
           paymentStatus: "UNPAID",
           paymentMethod: "Bank Transfer",

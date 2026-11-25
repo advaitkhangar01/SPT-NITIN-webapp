@@ -5,6 +5,7 @@ import InvoicePreview, { InvoiceData, InvoiceItemData } from "./InvoicePreview";
 import { CompanySnapshot } from "@/lib/company";
 import { PAYMENT_STATUS_OPTIONS, PAYMENT_METHOD_OPTIONS } from "@/lib/presets";
 import { formatDateDMY, formatIndianCurrency, parseCurrencyInput } from "@/lib/formatters";
+import { calculateInvoiceGst, calculateBaseRateFromGross, round2 } from "@/lib/gst";
 import {
   Save,
   Printer,
@@ -149,30 +150,18 @@ export default function InvoiceEditor({
     }
   }, []);
 
-  // Recalculate totals whenever items or discount change
+  // Recalculate totals authoritatively whenever items, discount or GST info changes
   useEffect(() => {
-    let calculatedSubtotal = 0;
-    let calculatedGst = 0;
-
-    items.forEach((item) => {
-      const q = Math.max(0, Number(item.quantity) || 0);
-      const r = Math.max(0, Number(item.rate) || 0);
-      const g = Math.max(0, Number(item.gstRate) || 0);
-      const base = q * r;
-      const gst = base * (g / 100);
-      calculatedSubtotal += base;
-      calculatedGst += gst;
+    const calc = calculateInvoiceGst(items, {
+      discount,
+      customerGst,
+      companyGst: company?.gstNumber,
     });
 
-    const safeDiscount = Math.max(0, Number(discount) || 0);
-    const sub = Math.round(calculatedSubtotal);
-    const gst = Math.round(calculatedGst);
-    const total = Math.max(0, sub + gst - safeDiscount);
-
-    setSubtotal(sub);
-    setGstAmount(gst);
-    setTotalAmount(total);
-  }, [items, discount]);
+    setSubtotal(calc.subtotal);
+    setGstAmount(calc.totalGst);
+    setTotalAmount(calc.totalAmount);
+  }, [items, discount, customerGst, company?.gstNumber]);
 
   // Update line item
   const handleItemChange = (
@@ -187,11 +176,11 @@ export default function InvoiceEditor({
       // Recalculate item line taxable amount (Quantity * Rate)
       const q = Math.max(0, field === "quantity" ? Number(val) || 0 : Number(item.quantity) || 0);
       const r = Math.max(0, field === "rate" ? Number(val) || 0 : Number(item.rate) || 0);
-      const g = Math.max(0, field === "gstRate" ? Number(val) || 0 : Number(item.gstRate) || 0);
+      const g = Math.max(0, Math.min(100, field === "gstRate" ? Number(val) || 0 : Number(item.gstRate) || 0));
       item.quantity = q;
       item.rate = r;
       item.gstRate = g;
-      item.amount = Math.round(q * r);
+      item.amount = round2(q * r);
 
       updated[index] = item;
       return updated;
@@ -206,10 +195,9 @@ export default function InvoiceEditor({
       const safeGross = Math.max(0, Number(gross) || 0);
       const g = Math.max(0, Number(item.gstRate) || 18);
       const q = Math.max(1, Number(item.quantity) || 1);
-      const gstFactor = 1 + g / 100;
-      const baseRate = Math.round(safeGross / gstFactor / q);
+      const baseRate = calculateBaseRateFromGross(safeGross, g, q);
       item.rate = baseRate;
-      item.amount = Math.round(q * baseRate);
+      item.amount = round2(q * baseRate);
       updated[index] = item;
       return updated;
     });
@@ -715,21 +703,21 @@ export default function InvoiceEditor({
                         <span>
                           GST ({item.gstRate}%):{" "}
                           <span className="font-semibold text-slate-700">
-                            {formatIndianCurrency(Math.round(item.amount * (item.gstRate / 100)))}
+                            {formatIndianCurrency(round2(item.amount * (item.gstRate / 100)))}
                           </span>
                         </span>
                         <span>•</span>
                         <span>
                           Total Incl. GST:{" "}
                           <span className="font-bold text-[#0F4C81]">
-                            {formatIndianCurrency(Math.round(item.amount * (1 + item.gstRate / 100)))}
+                            {formatIndianCurrency(round2(item.amount * (1 + item.gstRate / 100)))}
                           </span>
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => {
-                          const currentGross = Math.round(item.amount * (1 + item.gstRate / 100)) || 210000;
+                          const currentGross = round2(item.amount * (1 + item.gstRate / 100)) || 210000;
                           const input = window.prompt(
                             "Enter desired Total Amount (including GST) in ₹ for this item:",
                             String(currentGross)

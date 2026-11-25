@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { formatIndianCurrency, convertNumberToWords } from "@/lib/formatters";
+import { formatIndianCurrency, convertNumberToWords, formatIndianNumber } from "@/lib/formatters";
 import { CompanySnapshot, sanitizeBusinessEmail } from "@/lib/company";
+import { calculateInvoiceGst, formatGstRate, round2 } from "@/lib/gst";
 
 export interface InvoiceItemData {
   id?: string;
@@ -23,6 +24,7 @@ export interface InvoiceData {
   customerAddress?: string;
   customerMobile?: string;
   customerGst?: string;
+  isInterState?: boolean;
   items: InvoiceItemData[];
   subtotal: number;
   gstAmount: number;
@@ -59,21 +61,25 @@ export default function InvoicePreview({
     "Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034";
   const logo = safeCompany.logoPath || "/logo.png";
 
-  // Calculate GST breakdown (50% CGST + 50% SGST standard intra-state)
-  const totalGst = Math.round((Number(data.gstAmount) || 0) * 100) / 100;
-  const cgstAmount = Math.round((totalGst / 2) * 100) / 100;
-  const sgstAmount = Math.round((totalGst - cgstAmount) * 100) / 100;
-  const subtotal = Math.round((Number(data.subtotal) || 0) * 100) / 100;
-  const discount = Math.round((Number(data.discount) || 0) * 100) / 100;
-  const totalAmount = Math.round((Number(data.totalAmount) || Math.max(0, subtotal + totalGst - discount)) * 100) / 100;
-  const amountPaid = Math.round((Number(data.amountPaid) || 0) * 100) / 100;
-  const balanceDue = Math.max(0, Math.round((totalAmount - amountPaid) * 100) / 100);
+  // Authoritative product-wise GST calculation directly from line items
+  const gstCalc = calculateInvoiceGst(data.items, {
+    customerGst: data.customerGst,
+    companyGst: gst,
+    discount: data.discount,
+    isInterState: data.isInterState,
+  });
 
-  const effectiveGstPercent =
-    subtotal > 0
-      ? Math.round((totalGst / subtotal) * 100)
-      : 18;
-  const halfGstPercent = (effectiveGstPercent / 2).toFixed(1).replace(/\.0$/, "");
+  const subtotal = data.items && data.items.length > 0 ? gstCalc.subtotal : round2(Number(data.subtotal) || 0);
+  const totalGst = data.items && data.items.length > 0 ? gstCalc.totalGst : round2(Number(data.gstAmount) || 0);
+  const cgstAmount = data.items && data.items.length > 0 ? gstCalc.totalCgst : round2(totalGst / 2);
+  const sgstAmount = data.items && data.items.length > 0 ? gstCalc.totalSgst : round2(totalGst - cgstAmount);
+  const igstAmount = data.items && data.items.length > 0 ? gstCalc.totalIgst : (gstCalc.isInterState ? totalGst : 0);
+  const discount = round2(Number(data.discount) || 0);
+  const totalAmount = data.totalAmount !== undefined && Number(data.totalAmount) >= 0
+    ? round2(Number(data.totalAmount))
+    : gstCalc.totalAmount;
+  const amountPaid = round2(Number(data.amountPaid) || 0);
+  const balanceDue = Math.max(0, round2(totalAmount - amountPaid));
 
   const itemCount = data.items?.length || 0;
   const isDense = itemCount > 4;
@@ -302,7 +308,7 @@ export default function InvoicePreview({
             </tr>
           )}
 
-          {/* Subtotal, CGST, SGST, Discount, and Total Rows */}
+          {/* Subtotal, CGST, SGST (or IGST), Discount, and Total Rows */}
           <tr className="border-t border-black bg-gray-50/50">
             <td className="py-1 border-r border-black" colSpan={4}></td>
             <td className="py-1 px-2 border-r border-black text-right font-black uppercase text-[7.5px]" colSpan={2}>
@@ -312,24 +318,38 @@ export default function InvoicePreview({
               {formatIndianCurrency(subtotal)}
             </td>
           </tr>
-          <tr className="border-b border-gray-200">
-            <td className="py-1 border-r border-black" colSpan={4}></td>
-            <td className="py-1 px-2 border-r border-black text-right font-black uppercase text-[7.5px]" colSpan={2}>
-              CGST @ {halfGstPercent}%
-            </td>
-            <td className="py-1 px-2 text-right font-black font-mono">
-              {formatIndianCurrency(cgstAmount)}
-            </td>
-          </tr>
-          <tr className="border-b border-black">
-            <td className="py-1 border-r border-black" colSpan={4}></td>
-            <td className="py-1 px-2 border-r border-black text-right font-black uppercase text-[7.5px]" colSpan={2}>
-              SGST @ {halfGstPercent}%
-            </td>
-            <td className="py-1 px-2 text-right font-black font-mono">
-              {formatIndianCurrency(sgstAmount)}
-            </td>
-          </tr>
+          {gstCalc.isInterState ? (
+            <tr className="border-b border-black">
+              <td className="py-1 border-r border-black" colSpan={4}></td>
+              <td className="py-1 px-2 border-r border-black text-right font-black uppercase text-[7.5px]" colSpan={2}>
+                {gstCalc.slabs.length === 1 ? `IGST @ ${formatGstRate(gstCalc.slabs[0].igstRate)}` : "TOTAL IGST"}
+              </td>
+              <td className="py-1 px-2 text-right font-black font-mono">
+                {formatIndianCurrency(igstAmount)}
+              </td>
+            </tr>
+          ) : (
+            <>
+              <tr className="border-b border-gray-200">
+                <td className="py-1 border-r border-black" colSpan={4}></td>
+                <td className="py-1 px-2 border-r border-black text-right font-black uppercase text-[7.5px]" colSpan={2}>
+                  {gstCalc.slabs.length === 1 ? `CGST @ ${formatGstRate(gstCalc.slabs[0].cgstRate)}` : "TOTAL CGST"}
+                </td>
+                <td className="py-1 px-2 text-right font-black font-mono">
+                  {formatIndianCurrency(cgstAmount)}
+                </td>
+              </tr>
+              <tr className="border-b border-black">
+                <td className="py-1 border-r border-black" colSpan={4}></td>
+                <td className="py-1 px-2 border-r border-black text-right font-black uppercase text-[7.5px]" colSpan={2}>
+                  {gstCalc.slabs.length === 1 ? `SGST @ ${formatGstRate(gstCalc.slabs[0].sgstRate)}` : "TOTAL SGST"}
+                </td>
+                <td className="py-1 px-2 text-right font-black font-mono">
+                  {formatIndianCurrency(sgstAmount)}
+                </td>
+              </tr>
+            </>
+          )}
           {discount > 0 && (
             <tr className="border-b border-black text-emerald-700">
               <td className="py-1 border-r border-black" colSpan={4}></td>
@@ -379,73 +399,142 @@ export default function InvoicePreview({
 
       {/* Bottom GST Audit Breakdown Table */}
       <div className="w-full text-center bg-gray-50 text-gray-800 py-0.5 text-[7.5px] font-bold uppercase tracking-wider border border-black border-t-0">
-        GST Tax Breakdown Grid
+        GST Tax Breakdown Grid {gst ? `(GSTIN: ${gst})` : ""}
       </div>
-      <table
-        className="w-full table-fixed border border-black border-t-0 text-[8px] font-bold"
-        style={{ borderCollapse: "collapse" }}
-      >
-        <colgroup>
-          <col style={{ width: "22%" }} />
-          <col style={{ width: "18%" }} />
-          <col style={{ width: "8%" }} />
-          <col style={{ width: "13%" }} />
-          <col style={{ width: "8%" }} />
-          <col style={{ width: "13%" }} />
-          <col style={{ width: "18%" }} />
-        </colgroup>
-        <thead>
-          <tr className="bg-gray-50 border-b border-black text-[7px] font-black uppercase text-center">
-            <th className="py-1 border-r border-black" rowSpan={2}>GSTIN</th>
-            <th className="py-1 border-r border-black" rowSpan={2}>Taxable Value</th>
-            <th className="py-1 border-r border-black" colSpan={2}>CGST</th>
-            <th className="py-1 border-r border-black" colSpan={2}>SGST</th>
-            <th className="py-1 font-black" rowSpan={2}>Total Tax Amount</th>
-          </tr>
-          <tr className="bg-gray-50 border-b border-black text-[6.5px] font-black uppercase text-center">
-            <th className="py-0.5 border-r border-black">Rate</th>
-            <th className="py-0.5 border-r border-black">Amount</th>
-            <th className="py-0.5 border-r border-black">Rate</th>
-            <th className="py-0.5 border-r border-black">Amount</th>
-          </tr>
-        </thead>
-        <tbody className="text-center font-bold">
-          <tr className="align-middle">
-            <td className="py-1 border-r border-black text-[7.5px] font-mono">{gst}</td>
-            <td className="py-1 px-2 border-r border-black font-mono text-right">
-              {formatIndianCurrency(subtotal)}
-            </td>
-            <td className="py-1 border-r border-black">{halfGstPercent}%</td>
-            <td className="py-1 px-2 border-r border-black font-mono text-right">
-              {formatIndianCurrency(cgstAmount)}
-            </td>
-            <td className="py-1 border-r border-black">{halfGstPercent}%</td>
-            <td className="py-1 px-2 border-r border-black font-mono text-right">
-              {formatIndianCurrency(sgstAmount)}
-            </td>
-            <td className="py-1 px-2 font-mono text-right">
-              {formatIndianCurrency(totalGst)}
-            </td>
-          </tr>
-          <tr className="bg-gray-50 border-t border-black font-black uppercase text-[7px]">
-            <td className="py-1 border-r border-black text-left px-2">TOTAL</td>
-            <td className="py-1 px-2 border-r border-black font-mono text-right">
-              {formatIndianCurrency(subtotal)}
-            </td>
-            <td className="py-1 border-r border-black">—</td>
-            <td className="py-1 px-2 border-r border-black font-mono text-right">
-              {formatIndianCurrency(cgstAmount)}
-            </td>
-            <td className="py-1 border-r border-black">—</td>
-            <td className="py-1 px-2 border-r border-black font-mono text-right">
-              {formatIndianCurrency(sgstAmount)}
-            </td>
-            <td className="py-1 px-2 font-mono text-right">
-              {formatIndianCurrency(totalGst)}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      {gstCalc.isInterState ? (
+        <table
+          className="w-full table-fixed border border-black border-t-0 text-[8px] font-bold"
+          style={{ borderCollapse: "collapse" }}
+        >
+          <colgroup>
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "25%" }} />
+            <col style={{ width: "15%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "20%" }} />
+          </colgroup>
+          <thead>
+            <tr className="bg-gray-50 border-b border-black text-[7px] font-black uppercase text-center">
+              <th className="py-1 border-r border-black" rowSpan={2}>GST Rate</th>
+              <th className="py-1 border-r border-black" rowSpan={2}>Taxable Value</th>
+              <th className="py-1 border-r border-black" colSpan={2}>IGST</th>
+              <th className="py-1 font-black" rowSpan={2}>Total Tax</th>
+            </tr>
+            <tr className="bg-gray-50 border-b border-black text-[6.5px] font-black uppercase text-center">
+              <th className="py-0.5 border-r border-black">Rate</th>
+              <th className="py-0.5 border-r border-black">Amount</th>
+            </tr>
+          </thead>
+          <tbody className="text-center font-bold">
+            {gstCalc.slabs.map((slab) => (
+              <tr key={slab.gstRate} className="align-middle">
+                <td className="py-1 border-r border-black text-[7.5px] font-mono">
+                  {formatGstRate(slab.gstRate)}
+                </td>
+                <td className="py-1 px-2 border-r border-black font-mono text-right">
+                  {formatIndianNumber(slab.taxableValue)}
+                </td>
+                <td className="py-1 border-r border-black">
+                  {formatGstRate(slab.igstRate)}
+                </td>
+                <td className="py-1 px-2 border-r border-black font-mono text-right">
+                  {formatIndianNumber(slab.igstAmount, true)}
+                </td>
+                <td className="py-1 px-2 font-mono text-right">
+                  {formatIndianNumber(slab.totalTax, true)}
+                </td>
+              </tr>
+            ))}
+            <tr className="bg-gray-50 border-t border-black font-black uppercase text-[7px]">
+              <td className="py-1 border-r border-black text-left px-2">TOTAL</td>
+              <td className="py-1 px-2 border-r border-black font-mono text-right">
+                {formatIndianNumber(subtotal)}
+              </td>
+              <td className="py-1 border-r border-black">—</td>
+              <td className="py-1 px-2 border-r border-black font-mono text-right">
+                {formatIndianNumber(gstCalc.totalIgst, true)}
+              </td>
+              <td className="py-1 px-2 font-mono text-right">
+                {formatIndianNumber(totalGst, true)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      ) : (
+        <table
+          className="w-full table-fixed border border-black border-t-0 text-[8px] font-bold"
+          style={{ borderCollapse: "collapse" }}
+        >
+          <colgroup>
+            <col style={{ width: "16%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "17%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "17%" }} />
+            <col style={{ width: "20%" }} />
+          </colgroup>
+          <thead>
+            <tr className="bg-gray-50 border-b border-black text-[7px] font-black uppercase text-center">
+              <th className="py-1 border-r border-black" rowSpan={2}>GST Rate</th>
+              <th className="py-1 border-r border-black" rowSpan={2}>Taxable Value</th>
+              <th className="py-1 border-r border-black" colSpan={2}>CGST</th>
+              <th className="py-1 border-r border-black" colSpan={2}>SGST</th>
+              <th className="py-1 font-black" rowSpan={2}>Total Tax</th>
+            </tr>
+            <tr className="bg-gray-50 border-b border-black text-[6.5px] font-black uppercase text-center">
+              <th className="py-0.5 border-r border-black">Rate</th>
+              <th className="py-0.5 border-r border-black">Amount</th>
+              <th className="py-0.5 border-r border-black">Rate</th>
+              <th className="py-0.5 border-r border-black">Amount</th>
+            </tr>
+          </thead>
+          <tbody className="text-center font-bold">
+            {gstCalc.slabs.map((slab) => (
+              <tr key={slab.gstRate} className="align-middle">
+                <td className="py-1 border-r border-black text-[7.5px] font-mono">
+                  {formatGstRate(slab.gstRate)}
+                </td>
+                <td className="py-1 px-2 border-r border-black font-mono text-right">
+                  {formatIndianNumber(slab.taxableValue)}
+                </td>
+                <td className="py-1 border-r border-black">
+                  {formatGstRate(slab.cgstRate)}
+                </td>
+                <td className="py-1 px-2 border-r border-black font-mono text-right">
+                  {formatIndianNumber(slab.cgstAmount, true)}
+                </td>
+                <td className="py-1 border-r border-black">
+                  {formatGstRate(slab.sgstRate)}
+                </td>
+                <td className="py-1 px-2 border-r border-black font-mono text-right">
+                  {formatIndianNumber(slab.sgstAmount, true)}
+                </td>
+                <td className="py-1 px-2 font-mono text-right">
+                  {formatIndianNumber(slab.totalTax, true)}
+                </td>
+              </tr>
+            ))}
+            <tr className="bg-gray-50 border-t border-black font-black uppercase text-[7px]">
+              <td className="py-1 border-r border-black text-left px-2">TOTAL</td>
+              <td className="py-1 px-2 border-r border-black font-mono text-right">
+                {formatIndianNumber(subtotal)}
+              </td>
+              <td className="py-1 border-r border-black">—</td>
+              <td className="py-1 px-2 border-r border-black font-mono text-right">
+                {formatIndianNumber(cgstAmount, true)}
+              </td>
+              <td className="py-1 border-r border-black">—</td>
+              <td className="py-1 px-2 border-r border-black font-mono text-right">
+                {formatIndianNumber(sgstAmount, true)}
+              </td>
+              <td className="py-1 px-2 font-mono text-right">
+                {formatIndianNumber(totalGst, true)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      )}
 
       {/* Total Amount in Words Banner, Accounts Details & Legal Declaration, Authorized Signatory */}
       <div className="keep-together page-break-avoid">

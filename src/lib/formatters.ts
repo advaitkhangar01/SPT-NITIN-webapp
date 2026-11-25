@@ -28,6 +28,34 @@ export function formatIndianCurrency(amount: number | string | undefined | null)
 }
 
 /**
+ * Formats a number to Indian numbering format without currency symbol, e.g. 114286 -> 1,14,286
+ */
+export function formatIndianNumber(
+  amount: number | string | undefined | null,
+  forceDecimals: boolean = false
+): string {
+  if (amount === undefined || amount === null || amount === "") return "0";
+  const num = typeof amount === "string" ? parseFloat(amount.replace(/[^0-9.-]+/g, "")) : amount;
+  if (isNaN(num)) return "0";
+
+  const isNegative = num < 0;
+  const absNum = Math.abs(num);
+
+  const parts = absNum.toFixed(2).split(".");
+  let intPart = parts[0];
+  const decPart = parts[1];
+
+  if (intPart.length > 3) {
+    const lastThree = intPart.substring(intPart.length - 3);
+    const otherNumbers = intPart.substring(0, intPart.length - 3);
+    intPart = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + "," + lastThree;
+  }
+
+  const formattedDecimal = forceDecimals || decPart !== "00" ? `.${decPart}` : "";
+  return `${isNegative ? "-" : ""}${intPart}${formattedDecimal}`;
+}
+
+/**
  * Strips currency symbols and formatting, returning a clean numeric value
  */
 export function parseCurrencyInput(value: string | number | undefined | null): number {

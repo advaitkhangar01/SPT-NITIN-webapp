@@ -250,6 +250,164 @@ async function runRegressionTests() {
     `);
     await runCase("1-item Invoice Document", case1Html);
 
+    // Case 1b: Reference Multi-Slab Invoice (5% and 18%) with GST Breakdown Grid
+    const multiSlabHtml = baseHtmlWrapper(`
+      <div style="background:#0F4C81; color:white; text-align:center; padding:6px; font-weight:900; font-size:12px; text-transform:uppercase;">TAX INVOICE</div>
+      <table style="border:1px solid #000; border-top:none;">
+        <colgroup><col style="width:50%"/><col style="width:25%"/><col style="width:25%"/></colgroup>
+        <tr>
+          <td rowspan="3" style="border-right:1px solid #000;">
+            <div style="font-size:13px; font-weight:900; color:#0F4C81;">SHASHIKALA POWER TECH</div>
+            <div style="font-size:8px;">SOLAR & ENERGY SOLUTIONS</div>
+            <div style="font-size:8.5px; margin-top:4px;">Plot No. 80, Shivaji Colony, Behind Nasare Hall, Hudkeshwar Road, Nagpur-440034<br/>Phone: +91 95271 61595<br/>GSTIN: 27AJRPN3091N1ZE</div>
+          </td>
+          <td style="border-right:1px solid #000; border-bottom:1px solid #000;">Invoice No.<br/><b>INV-2026-MULTI</b></td>
+          <td style="border-bottom:1px solid #000;">Dated<br/><b>25/11/2026</b></td>
+        </tr>
+        <tr>
+          <td style="border-right:1px solid #000; border-bottom:1px solid #000;">Due Date<br/><b>05/12/2026</b></td>
+          <td style="border-bottom:1px solid #000;">Mode / Terms<br/><b>Bank Transfer</b></td>
+        </tr>
+        <tr>
+          <td style="border-right:1px solid #000;">Ref No.<br/><b>QT-2026-MULTI</b></td>
+          <td>Status<br/><b>UNPAID</b></td>
+        </tr>
+      </table>
+      <div style="background:#eee; font-weight:900; font-size:8px; padding:4px; border:1px solid #000; border-top:none;">BUYER (BILL TO) - SHASHIKALA POWERTECH CLIENT</div>
+      <table style="border:1px solid #000; border-top:none; margin-top:0;">
+        <colgroup>
+          <col style="width:6%"/><col style="width:40%"/><col style="width:12%"/><col style="width:8%"/><col style="width:13%"/><col style="width:7%"/><col style="width:14%"/>
+        </colgroup>
+        <thead>
+          <tr style="background:#f1f5f9; border-bottom:1px solid #000; font-size:7.5px;">
+            <th style="border-right:1px solid #000;">Sr. No</th>
+            <th style="border-right:1px solid #000; text-align:left;">Description</th>
+            <th style="border-right:1px solid #000;">HSN</th>
+            <th style="border-right:1px solid #000;">Qty</th>
+            <th style="border-right:1px solid #000; text-align:right;">Rate</th>
+            <th style="border-right:1px solid #000;">Per</th>
+            <th style="text-align:right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border-right:1px solid #000; text-align:center;">1</td>
+            <td style="border-right:1px solid #000;">Solar Panel</td>
+            <td style="border-right:1px solid #000; text-align:center;">8541</td>
+            <td style="border-right:1px solid #000; text-align:center;">1</td>
+            <td style="border-right:1px solid #000; text-align:right;">90,476</td>
+            <td style="border-right:1px solid #000; text-align:center;">Set</td>
+            <td style="text-align:right; font-weight:bold;">90,476</td>
+          </tr>
+          <tr>
+            <td style="border-right:1px solid #000; text-align:center;">2</td>
+            <td style="border-right:1px solid #000;">Polycab Inverter</td>
+            <td style="border-right:1px solid #000; text-align:center;">8504</td>
+            <td style="border-right:1px solid #000; text-align:center;">1</td>
+            <td style="border-right:1px solid #000; text-align:right;">23,810</td>
+            <td style="border-right:1px solid #000; text-align:center;">Set</td>
+            <td style="text-align:right; font-weight:bold;">23,810</td>
+          </tr>
+          <tr>
+            <td style="border-right:1px solid #000; text-align:center;">3</td>
+            <td style="border-right:1px solid #000;">Other Material</td>
+            <td style="border-right:1px solid #000; text-align:center;">8544</td>
+            <td style="border-right:1px solid #000; text-align:center;">1</td>
+            <td style="border-right:1px solid #000; text-align:right;">42,373</td>
+            <td style="border-right:1px solid #000; text-align:center;">Set</td>
+            <td style="text-align:right; font-weight:bold;">42,373</td>
+          </tr>
+          <tr>
+            <td style="border-right:1px solid #000; text-align:center;">4</td>
+            <td style="border-right:1px solid #000;">Installation</td>
+            <td style="border-right:1px solid #000; text-align:center;">9954</td>
+            <td style="border-right:1px solid #000; text-align:center;">1</td>
+            <td style="border-right:1px solid #000; text-align:right;">25,424</td>
+            <td style="border-right:1px solid #000; text-align:center;">Set</td>
+            <td style="text-align:right; font-weight:bold;">25,424</td>
+          </tr>
+          <tr style="border-top:1px solid #000; background:#f8fafc;">
+            <td colspan="4" style="border-right:1px solid #000;"></td>
+            <td colspan="2" style="border-right:1px solid #000; text-align:right; font-weight:900;">SUB TOTAL</td>
+            <td style="text-align:right; font-weight:bold;">₹1,82,083</td>
+          </tr>
+          <tr>
+            <td colspan="4" style="border-right:1px solid #000;"></td>
+            <td colspan="2" style="border-right:1px solid #000; text-align:right; font-weight:900;">TOTAL CGST</td>
+            <td style="text-align:right; font-weight:bold;">₹8,958.88</td>
+          </tr>
+          <tr>
+            <td colspan="4" style="border-right:1px solid #000;"></td>
+            <td colspan="2" style="border-right:1px solid #000; text-align:right; font-weight:900;">TOTAL SGST</td>
+            <td style="text-align:right; font-weight:bold;">₹8,958.88</td>
+          </tr>
+          <tr>
+            <td colspan="4" style="border-right:1px solid #000;"></td>
+            <td colspan="2" style="border-right:1px solid #000; text-align:right; font-weight:900;">DISCOUNT</td>
+            <td style="text-align:right; font-weight:bold;">-₹1</td>
+          </tr>
+          <tr style="background:#eee; font-weight:900;">
+            <td colspan="4" style="border-right:1px solid #000;">TOTAL INVOICE VALUE</td>
+            <td colspan="2" style="border-right:1px solid #000; text-align:right;">TOTAL (₹)</td>
+            <td style="text-align:right; color:#0F4C81;">₹2,00,000</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="background:#f8fafc; text-align:center; padding:2px; font-size:7.5px; font-weight:bold; text-transform:uppercase; border:1px solid #000; border-top:none;">
+        GST Tax Breakdown Grid (GSTIN: 27AJRPN3091N1ZE)
+      </div>
+      <table style="border:1px solid #000; border-top:none; text-align:center; font-size:8px;">
+        <colgroup>
+          <col style="width:16%"/><col style="width:20%"/><col style="width:10%"/><col style="width:17%"/><col style="width:10%"/><col style="width:17%"/><col style="width:20%"/>
+        </colgroup>
+        <thead>
+          <tr style="background:#f8fafc; border-bottom:1px solid #000; font-size:7px; font-weight:900;">
+            <th rowspan="2" style="border-right:1px solid #000;">GST Rate</th>
+            <th rowspan="2" style="border-right:1px solid #000;">Taxable Value</th>
+            <th colspan="2" style="border-right:1px solid #000;">CGST</th>
+            <th colspan="2" style="border-right:1px solid #000;">SGST</th>
+            <th rowspan="2">Total Tax</th>
+          </tr>
+          <tr style="background:#f8fafc; border-bottom:1px solid #000; font-size:6.5px; font-weight:900;">
+            <th style="border-right:1px solid #000;">Rate</th>
+            <th style="border-right:1px solid #000;">Amount</th>
+            <th style="border-right:1px solid #000;">Rate</th>
+            <th style="border-right:1px solid #000;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border-right:1px solid #000; font-family:monospace;">5%</td>
+            <td style="border-right:1px solid #000; text-align:right; font-family:monospace; padding-right:8px;">1,14,286</td>
+            <td style="border-right:1px solid #000;">2.5%</td>
+            <td style="border-right:1px solid #000; text-align:right; font-family:monospace; padding-right:8px;">2,857.15</td>
+            <td style="border-right:1px solid #000;">2.5%</td>
+            <td style="border-right:1px solid #000; text-align:right; font-family:monospace; padding-right:8px;">2,857.15</td>
+            <td style="text-align:right; font-family:monospace; padding-right:8px;">5,714.30</td>
+          </tr>
+          <tr>
+            <td style="border-right:1px solid #000; font-family:monospace;">18%</td>
+            <td style="border-right:1px solid #000; text-align:right; font-family:monospace; padding-right:8px;">67,797</td>
+            <td style="border-right:1px solid #000;">9%</td>
+            <td style="border-right:1px solid #000; text-align:right; font-family:monospace; padding-right:8px;">6,101.73</td>
+            <td style="border-right:1px solid #000;">9%</td>
+            <td style="border-right:1px solid #000; text-align:right; font-family:monospace; padding-right:8px;">6,101.73</td>
+            <td style="text-align:right; font-family:monospace; padding-right:8px;">12,203.46</td>
+          </tr>
+          <tr style="background:#f8fafc; border-top:1px solid #000; font-weight:900; font-size:7px;">
+            <td style="border-right:1px solid #000; text-align:left; padding-left:8px;">TOTAL</td>
+            <td style="border-right:1px solid #000; text-align:right; font-family:monospace; padding-right:8px;">1,82,083</td>
+            <td style="border-right:1px solid #000;">—</td>
+            <td style="border-right:1px solid #000; text-align:right; font-family:monospace; padding-right:8px;">8,958.88</td>
+            <td style="border-right:1px solid #000;">—</td>
+            <td style="border-right:1px solid #000; text-align:right; font-family:monospace; padding-right:8px;">8,958.88</td>
+            <td style="text-align:right; font-family:monospace; padding-right:8px;">17,917.76</td>
+          </tr>
+        </tbody>
+      </table>
+    `);
+    await runCase("Multi-Slab (5% & 18%) Reference Invoice with GST Breakdown Grid", multiSlabHtml);
+
     // Case 2: 10 items Invoice
     let tenRows = "";
     for (let i = 1; i <= 10; i++) {
